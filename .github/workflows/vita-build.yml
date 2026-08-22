@@ -63,9 +63,61 @@ jobs:
           test -f build-vita/OpenMoHAA.vpk
           ls -lh build-vita/OpenMoHAA.vpk
 
+      - name: Symbolize uploaded Vita crash offsets
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          echo '=== candidate Vita module files ==='
+          find build-vita -type f \( -name '*.elf' -o -name '*.velf' -o -name '*.suprx' -o -name 'cgame*' -o -name 'game*' \) -print | sort
+          CGAME="$(find build-vita -type f -name 'cgame.elf' -print -quit)"
+          if [ -z "$CGAME" ]; then
+            CGAME="$(find build-vita -type f -name '*cgame*.elf' -print -quit)"
+          fi
+          if [ -z "$CGAME" ]; then
+            echo 'cgame ELF not found; listing likely files'
+            find build-vita -type f | grep -Ei 'cgame|game.*elf|\.velf$|\.suprx$' || true
+            exit 0
+          fi
+          echo "CGAME=$CGAME"
+          echo '=== ELF program headers ==='
+          "$VITASDK/bin/arm-vita-eabi-readelf" -l "$CGAME" || true
+          echo '=== symbols for crash PC/LR offsets ==='
+          for A in 0x5dce6 0x5dce4 0x1dd95 0x1dd94; do
+            echo "--- $A ---"
+            "$VITASDK/bin/arm-vita-eabi-addr2line" -a -f -C -e "$CGAME" "$A" || true
+          done
+          echo '=== nearest symbols ==='
+          "$VITASDK/bin/arm-vita-eabi-nm" -n -C "$CGAME" | tail -n +1 > /tmp/cgame-nm.txt || true
+          python3 - <<'PY'
+          import re
+          target = 0x5dce6
+          best = None
+          try:
+              for line in open('/tmp/cgame-nm.txt', errors='replace'):
+                  m = re.match(r'^([0-9a-fA-F]+)\s+\S\s+(.*)$', line.rstrip())
+                  if not m:
+                      continue
+                  addr = int(m.group(1), 16)
+                  if addr <= target and (best is None or addr > best[0]):
+                      best = (addr, m.group(2))
+          except FileNotFoundError:
+              pass
+          print('nearest_to_0x5dce6 =', best, 'delta=', hex(target-best[0]) if best else None)
+          PY
+
       - name: Upload VPK
         uses: actions/upload-artifact@v4
         with:
           name: OpenMoHAA-Vita
           path: build-vita/OpenMoHAA.vpk
           if-no-files-found: error
+
+      - name: Upload Vita debug modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenMoHAA-Vita-Debug
+          path: |
+            build-vita/**/*.elf
+            build-vita/**/*.velf
+            build-vita/**/*.suprx
+          if-no-files-found: warn
