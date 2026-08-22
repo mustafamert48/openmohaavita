@@ -32,10 +32,11 @@ jobs:
         shell: bash
         run: |
           export VITASDK="$HOME/vitasdk"
-          for pkg in zlib bzip2 libpng libjpeg-turbo sdl2 openal-soft openssl curl libogg libvorbis opus opusfile libmad libmathneon vitaShaRK vitaGL SceShaccCgExt kubridge taihen vita-rss-libdl; do
-            echo "Installing $pkg"
-            "$VITASDK/bin/vdpm" -f "$pkg"
-          done
+          export VDPM_NONINTERACTIVE=1
+          "$VITASDK/bin/vdpm" install \
+            zlib bzip2 libpng libjpeg-turbo sdl2 openal-soft openssl curl \
+            libogg libvorbis opus opusfile libmad libmathneon vitaShaRK vitaGL \
+            SceShaccCgExt kubridge taihen vita-rss-libdl
 
       - name: Add empty librt compatibility archive
         shell: bash
