@@ -14,6 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Bake v0.0.2-vita.1 defaults into bundled autoexec
+        shell: bash
+        run: |
+          printf '\n\n// ---- v0.0.2-vita.1 FINAL HARDWARE-TESTED DEFAULTS ----\n' >> misc/vita/main/autoexec.cfg
+          cat misc/vita/main/v0.0.2-vita.1.cfg >> misc/vita/main/autoexec.cfg
+          tail -n 40 misc/vita/main/autoexec.cfg
+
       - name: Install host build tools
         run: |
           sudo apt-get update
