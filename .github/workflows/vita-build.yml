@@ -68,12 +68,10 @@ jobs:
           export VITASDK="$HOME/vitasdk"
           cmake --build build-vita -j2
           test -f build-vita/OpenMoHAA.vpk
-          test -f build-vita/cgame.elf
-          test -f build-vita/game.elf
-          test -f build-vita/openmohaa
-          ls -lh build-vita/OpenMoHAA.vpk build-vita/cgame.elf build-vita/game.elf build-vita/openmohaa
+          ls -lh build-vita/OpenMoHAA.vpk
 
       - name: Upload VPK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: OpenMoHAA-Vita
@@ -81,11 +79,13 @@ jobs:
           if-no-files-found: error
 
       - name: Upload symbol files
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: OpenMoHAA-Vita-symbols
           path: |
-            build-vita/cgame.elf
-            build-vita/game.elf
-            build-vita/openmohaa
+            build-vita/**/cgame.elf
+            build-vita/**/game.elf
+            build-vita/**/openmohaa
+            build-vita/**/*.velf
           if-no-files-found: error
