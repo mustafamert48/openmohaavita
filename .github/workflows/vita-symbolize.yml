@@ -3,6 +3,8 @@ name: Symbolize Vita cgame crash
 on:
   push:
     branches: [chatgpt-vita-build2]
+  pull_request:
+    branches: [vita-port]
   workflow_dispatch:
 
 jobs:
