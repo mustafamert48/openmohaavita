@@ -1,0 +1,70 @@
+name: Build PS Vita VPK
+
+on:
+  push:
+    branches: [vita-port, chatgpt-vita-build]
+  pull_request:
+    branches: [vita-port]
+  workflow_dispatch:
+
+jobs:
+  vita:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install host build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bison flex cmake ninja-build pkg-config curl bzip2
+
+      - name: Bootstrap VitaSDK
+        shell: bash
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/vitasdk/vdpm/master/bootstrap-vitasdk.sh -o /tmp/bootstrap-vitasdk.sh
+          chmod +x /tmp/bootstrap-vitasdk.sh
+          VITASDK="$HOME/vitasdk" /tmp/bootstrap-vitasdk.sh
+          echo "VITASDK=$HOME/vitasdk" >> "$GITHUB_ENV"
+          echo "$HOME/vitasdk/bin" >> "$GITHUB_PATH"
+
+      - name: Install Vita libraries
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          for pkg in zlib bzip2 libpng libjpeg-turbo sdl2 openal-soft openssl curl libogg libvorbis opus opusfile libmad libmathneon vitaShaRK vitaGL SceShaccCgExt kubridge taihen vita-rss-libdl; do
+            echo "Installing $pkg"
+            "$VITASDK/bin/vdpm" -f "$pkg"
+          done
+
+      - name: Add empty librt compatibility archive
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          printf 'void __vita_librt_stub(void) {}\n' > /tmp/librt_stub.c
+          "$VITASDK/bin/arm-vita-eabi-gcc" -c /tmp/librt_stub.c -o /tmp/librt_stub.o
+          "$VITASDK/bin/arm-vita-eabi-ar" rcs "$VITASDK/arm-vita-eabi/lib/librt.a" /tmp/librt_stub.o
+
+      - name: Configure
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          cmake -S . -B build-vita \
+            -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -G Ninja
+
+      - name: Build VPK
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          cmake --build build-vita -j2
+          test -f build-vita/OpenMoHAA.vpk
+          ls -lh build-vita/OpenMoHAA.vpk
+
+      - name: Upload VPK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenMoHAA-Vita
+          path: build-vita/OpenMoHAA.vpk
+          if-no-files-found: error
