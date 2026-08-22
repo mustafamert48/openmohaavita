@@ -1,0 +1,81 @@
+name: Symbolize Vita cgame crash
+
+on:
+  push:
+    branches: [chatgpt-vita-build2]
+  workflow_dispatch:
+
+jobs:
+  symbolize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install host tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bison flex cmake ninja-build pkg-config curl bzip2
+
+      - name: Bootstrap VitaSDK
+        shell: bash
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/vitasdk/vdpm/v0.1.1/bootstrap-vitasdk.sh -o /tmp/bootstrap-vitasdk.sh
+          chmod +x /tmp/bootstrap-vitasdk.sh
+          VITASDK="$HOME/vitasdk" /tmp/bootstrap-vitasdk.sh
+          echo "VITASDK=$HOME/vitasdk" >> "$GITHUB_ENV"
+          echo "$HOME/vitasdk/bin" >> "$GITHUB_PATH"
+
+      - name: Install configure dependencies
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          export VDPM_NONINTERACTIVE=1
+          "$VITASDK/bin/vdpm" install \
+            zlib bzip2 libpng libjpeg-turbo sdl2 openal-soft openssl curl \
+            libogg libvorbis opus opusfile libmad libmathneon vitaShaRK vitaGL \
+            SceShaccCgExt kubridge taihen vita-rss-libdl
+          printf 'void __vita_librt_stub(void) {}\n' > /tmp/librt_stub.c
+          "$VITASDK/bin/arm-vita-eabi-gcc" -c /tmp/librt_stub.c -o /tmp/librt_stub.o
+          "$VITASDK/bin/arm-vita-eabi-ar" rcs "$VITASDK/arm-vita-eabi/lib/librt.a" /tmp/librt_stub.o
+
+      - name: Configure
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          cmake -S . -B build-vita \
+            -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -G Ninja
+
+      - name: Build cgame ELF only
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          cmake --build build-vita --target cgame.elf -j4
+          find build-vita -type f -name 'cgame.elf' -ls
+
+      - name: Symbolize crash PC and LR
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          CGAME="$(find build-vita -type f -name 'cgame.elf' -print -quit)"
+          test -n "$CGAME"
+          echo "CGAME=$CGAME"
+          "$VITASDK/bin/arm-vita-eabi-readelf" -l "$CGAME"
+          echo '=== addr2line ==='
+          for A in 0x5dce6 0x5dce4 0x1dd95 0x1dd94; do
+            echo "--- $A ---"
+            "$VITASDK/bin/arm-vita-eabi-addr2line" -a -f -C -e "$CGAME" "$A" || true
+          done
+          echo '=== disassembly around crash ==='
+          "$VITASDK/bin/arm-vita-eabi-objdump" -d -C "$CGAME" --start-address=0x5dc80 --stop-address=0x5dd40 || true
+          echo '=== nearest symbols ==='
+          "$VITASDK/bin/arm-vita-eabi-nm" -n -C "$CGAME" | awk '$1 <= "0005dce6" {last=$0} END {print last}' || true
+
+      - name: Upload cgame ELF
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenMoHAA-cgame-ELF
+          path: build-vita/cgame.elf
+          if-no-files-found: error
