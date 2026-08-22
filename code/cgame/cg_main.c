@@ -779,6 +779,12 @@ Called before every level change or subsystem restart
 */
 void CG_Shutdown(void)
 {
+    // The Vita keeps the cgame module resident across level transitions while
+    // the engine releases its cgame heap. Drain temp models and delayed effect
+    // events before that happens so the next server restart cannot walk stale
+    // Event pointers left in EffectsEventQueue.
+    CG_RestartCommandManager();
+
     L_ShutdownEvents();
     // Shutdown radar
     cgi.CL_InitRadar(NULL, NULL, -1);
