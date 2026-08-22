@@ -3,6 +3,8 @@ name: Build PS Vita VPK
 on:
   push:
     branches: [chatgpt-vita-build]
+  pull_request:
+    branches: [vita-port]
   workflow_dispatch:
 
 jobs:
