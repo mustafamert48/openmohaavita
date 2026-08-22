@@ -6403,7 +6403,14 @@ void ClientGameCommandManager::ResetPendingEvents()
     while (event != &EffectsEventQueue) {
         tmp = event->next;
 
-        delete event->event;
+        // Remove the node before destroying its Event. Event destruction can
+        // invoke listener cleanup, which must never observe this node again.
+        LL_Remove(event, next, prev);
+
+        Event *queuedEvent = event->event;
+        event->event = NULL;
+
+        delete queuedEvent;
         delete event;
 
         event = tmp;
