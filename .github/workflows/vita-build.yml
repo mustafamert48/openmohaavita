@@ -2,7 +2,7 @@ name: Build PS Vita VPK
 
 on:
   push:
-    branches: [vita-port, chatgpt-vita-build]
+    branches: [vita-port, chatgpt-vita-build, chatgpt-vita-build2]
   pull_request:
     branches: [vita-port]
   workflow_dispatch:
@@ -22,7 +22,7 @@ jobs:
       - name: Bootstrap VitaSDK
         shell: bash
         run: |
-          curl -fsSL https://raw.githubusercontent.com/vitasdk/vdpm/master/bootstrap-vitasdk.sh -o /tmp/bootstrap-vitasdk.sh
+          curl -fsSL https://raw.githubusercontent.com/vitasdk/vdpm/v0.1.1/bootstrap-vitasdk.sh -o /tmp/bootstrap-vitasdk.sh
           chmod +x /tmp/bootstrap-vitasdk.sh
           VITASDK="$HOME/vitasdk" /tmp/bootstrap-vitasdk.sh
           echo "VITASDK=$HOME/vitasdk" >> "$GITHUB_ENV"
