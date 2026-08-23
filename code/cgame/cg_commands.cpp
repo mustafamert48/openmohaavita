@@ -5134,6 +5134,42 @@ void ClientGameCommandManager::RestartAllEmitters(void)
 }
 
 //===============
+// ResetEmittersForLevelShutdown
+//===============
+int ClientGameCommandManager::ResetEmittersForLevelShutdown(void)
+{
+    int numFreed = 0;
+
+    // CG_RestartCommandManager frees active temp models first.  Any emitters
+    // left here have no live temp-model owners and belong to the level that is
+    // being torn down.  The Vita keeps this module resident, so explicitly
+    // destroy them before their TIKI/model storage is released.
+    while (m_emitters.NumObjects() > 0) {
+        const int     index = m_emitters.NumObjects();
+        spawnthing_t *sp    = m_emitters.ObjectAt(index);
+
+        m_emitters.RemoveObjectAt(index);
+        if (sp == m_spawnthing) {
+            m_spawnthing = NULL;
+        }
+
+        delete sp;
+        numFreed++;
+    }
+
+    m_spawnthing = NULL;
+
+    // The embedded local emitter is archived with the heap-owned emitters.
+    // Reconstruct it while the outgoing level heap is still valid so none of
+    // its strings, emitter times, or TIKI pointer can leak into the next map.
+    m_localemitter.~spawnthing_t();
+    ::new (&m_localemitter) spawnthing_t();
+    InitializeSpawnthing(&m_localemitter);
+
+    return numFreed;
+}
+
+//===============
 // CG_RestartCommandManager
 //===============
 void CG_RestartCommandManager()
@@ -5143,6 +5179,12 @@ void CG_RestartCommandManager()
     // Added in OPM
     //  Clean up all effect events when the server restarts
     commandManager.ResetPendingEvents();
+}
+
+void CG_ResetEmittersForLevelShutdown()
+{
+    int numFreed = commandManager.ResetEmittersForLevelShutdown();
+    cgi.DPrintf("[vita] cleared %d level emitters before cgame heap shutdown\n", numFreed);
 }
 
 //=================

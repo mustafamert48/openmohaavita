@@ -948,6 +948,7 @@ public:
     void          FreeAllTempModels(void);
     void          FreeSomeTempModels(void);
     void          RestartAllEmitters(void);
+    int           ResetEmittersForLevelShutdown(void);
 
     void InitializeTempModels(void);
     void InitializeTempModelCvars(void);
