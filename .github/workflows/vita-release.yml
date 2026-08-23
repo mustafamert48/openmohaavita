@@ -1,0 +1,94 @@
+name: Publish PS Vita Release
+
+on:
+  push:
+    branches:
+      - release/v0.0.2-vita.1
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bake v0.0.2-vita.1 defaults into bundled autoexec
+        shell: bash
+        run: |
+          printf '\n\n// ---- v0.0.2-vita.1 FINAL HARDWARE-TESTED DEFAULTS ----\n' >> misc/vita/main/autoexec.cfg
+          cat misc/vita/main/v0.0.2-vita.1.cfg >> misc/vita/main/autoexec.cfg
+
+      - name: Install host build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bison flex cmake ninja-build pkg-config curl bzip2 zip
+
+      - name: Bootstrap VitaSDK
+        shell: bash
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/vitasdk/vdpm/v0.1.1/bootstrap-vitasdk.sh -o /tmp/bootstrap-vitasdk.sh
+          chmod +x /tmp/bootstrap-vitasdk.sh
+          VITASDK="$HOME/vitasdk" /tmp/bootstrap-vitasdk.sh
+          echo "VITASDK=$HOME/vitasdk" >> "$GITHUB_ENV"
+          echo "$HOME/vitasdk/bin" >> "$GITHUB_PATH"
+
+      - name: Install Vita libraries
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          export VDPM_NONINTERACTIVE=1
+          "$VITASDK/bin/vdpm" install \
+            zlib bzip2 libpng libjpeg-turbo sdl2 openal-soft openssl curl \
+            libogg libvorbis opus opusfile libmad libmathneon vitaShaRK vitaGL \
+            SceShaccCgExt kubridge taihen vita-rss-libdl
+
+      - name: Add empty librt compatibility archive
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          printf 'void __vita_librt_stub(void) {}\n' > /tmp/librt_stub.c
+          "$VITASDK/bin/arm-vita-eabi-gcc" -c /tmp/librt_stub.c -o /tmp/librt_stub.o
+          "$VITASDK/bin/arm-vita-eabi-ar" rcs "$VITASDK/arm-vita-eabi/lib/librt.a" /tmp/librt_stub.o
+
+      - name: Configure
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          cmake -S . -B build-vita \
+            -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -G Ninja
+
+      - name: Build VPK
+        shell: bash
+        run: |
+          export VITASDK="$HOME/vitasdk"
+          cmake --build build-vita -j2
+          test -f build-vita/OpenMoHAA.vpk
+
+      - name: Package symbols
+        shell: bash
+        run: |
+          find build-vita -type f \( -name 'cgame.elf' -o -name 'game.elf' -o -name '*.velf' -o -name 'openmohaa' \) -print | zip -@ OpenMoHAA-Vita-symbols.zip
+
+      - name: Publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          tag="v0.0.2-vita.1"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" build-vita/OpenMoHAA.vpk OpenMoHAA-Vita-symbols.zip --clobber
+          else
+            gh release create "$tag" \
+              build-vita/OpenMoHAA.vpk \
+              OpenMoHAA-Vita-symbols.zip \
+              --target "$GITHUB_SHA" \
+              --title "OpenMoHAA Vita v0.0.2-vita.1" \
+              --notes-file docs/releases/v0.0.2-vita.1.md \
+              --prerelease
+          fi
