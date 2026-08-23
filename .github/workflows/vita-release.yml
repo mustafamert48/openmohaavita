@@ -1,16 +1,18 @@
-name: Build PS Vita VPK
+name: Publish PS Vita Release
 
 on:
   push:
-    branches: [vita-port, chatgpt-vita-build, chatgpt-vita-build2, vita-sky-arrays-test]
-  pull_request:
-    branches: [vita-port]
-  workflow_dispatch:
+    branches:
+      - release/v0.0.2-vita.1
+
+permissions:
+  contents: write
 
 jobs:
-  vita:
+  release:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+
     steps:
       - uses: actions/checkout@v4
 
@@ -19,12 +21,11 @@ jobs:
         run: |
           printf '\n\n// ---- v0.0.2-vita.1 FINAL HARDWARE-TESTED DEFAULTS ----\n' >> misc/vita/main/autoexec.cfg
           cat misc/vita/main/v0.0.2-vita.1.cfg >> misc/vita/main/autoexec.cfg
-          tail -n 40 misc/vita/main/autoexec.cfg
 
       - name: Install host build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y bison flex cmake ninja-build pkg-config curl bzip2
+          sudo apt-get install -y bison flex cmake ninja-build pkg-config curl bzip2 zip
 
       - name: Bootstrap VitaSDK
         shell: bash
@@ -68,24 +69,26 @@ jobs:
           export VITASDK="$HOME/vitasdk"
           cmake --build build-vita -j2
           test -f build-vita/OpenMoHAA.vpk
-          ls -lh build-vita/OpenMoHAA.vpk
 
-      - name: Upload VPK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: OpenMoHAA-Vita
-          path: build-vita/OpenMoHAA.vpk
-          if-no-files-found: error
+      - name: Package symbols
+        shell: bash
+        run: |
+          find build-vita -type f \( -name 'cgame.elf' -o -name 'game.elf' -o -name '*.velf' -o -name 'openmohaa' \) -print | zip -@ OpenMoHAA-Vita-symbols.zip
 
-      - name: Upload symbol files
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: OpenMoHAA-Vita-symbols
-          path: |
-            build-vita/**/cgame.elf
-            build-vita/**/game.elf
-            build-vita/**/openmohaa
-            build-vita/**/*.velf
-          if-no-files-found: error
+      - name: Publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          tag="v0.0.2-vita.1"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" build-vita/OpenMoHAA.vpk OpenMoHAA-Vita-symbols.zip --clobber
+          else
+            gh release create "$tag" \
+              build-vita/OpenMoHAA.vpk \
+              OpenMoHAA-Vita-symbols.zip \
+              --target "$GITHUB_SHA" \
+              --title "OpenMoHAA Vita v0.0.2-vita.1" \
+              --notes-file docs/releases/v0.0.2-vita.1.md \
+              --prerelease
+          fi

@@ -166,6 +166,14 @@ void UIFAKKLoadGameClass::SetupFiles(void)
             continue;
         }
 
+        /* A usable save consists of both the .ssv metadata and the .sav level
+         * archive.  Older Vita builds intentionally skipped the latter but
+         * still produced metadata/screenshots, leaving ghost slots that always
+         * failed with "Savegame not found." */
+        if (FS_ReadFileEx(Com_GetArchiveFileName(save.saveName, "sav"), NULL, qtrue) < 0) {
+            continue;
+        }
+
         gametime = (save.mapTime / 1000);
         date     = save.time;
 

@@ -2284,8 +2284,8 @@ qboolean SV_ArchiveLevelFile(qboolean loading, qboolean autosave)
 			FS_FCloseFile(f);
 		}
 	} else {
-#if defined(__SWITCH__) || defined(__vita__)
-		/* CONSOLES: skip ALL level saves. The cross-level cached-module statics
+#ifdef __SWITCH__
+		/* Switch: skip ALL level saves. The cross-level cached-module statics
 		 * make the save path unstable: the cgame-state archive
 		 * (CG_SaveStateToBuffer -> ClientGameCommandManager::ArchiveToMemory) walks
 		 * the persistent m_emitters/tempmodel lists, which now retain stale
@@ -2321,6 +2321,16 @@ qboolean SV_ArchiveLevelFile(qboolean loading, qboolean autosave)
 		 * single-binary Switch, so skip ALL level saves. The campaign plays
 		 * crash-free; real saving waits on the deep serialization fix. */
 		return qtrue;
+#elif defined(__vita__)
+		/* Vita transition autosaves remain disabled in SV_SaveGame().  Manual
+		 * saves must write the .sav level payload as well as the .ssv metadata;
+		 * without it the menu shows a save slot which SV_Loadgame_f can never
+		 * load.  The Vita cgame shutdown now drains transient command/effect
+		 * state before the persistent module heap is released, so exercise the
+		 * normal archiver for fresh manual saves. */
+		if (autosave) {
+			return qtrue;
+		}
 #endif
 		cls.savedCgameStateSize = cge->CG_SaveStateToBuffer(&cls.savedCgameState, svs.time);
 		ge->WriteLevel(name, autosave, (byte **)&cls.savedCgameState, &cls.savedCgameStateSize);

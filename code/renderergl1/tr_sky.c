@@ -377,6 +377,48 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 {
 	int s, t;
 
+#ifdef __vita__
+	/*
+	 * vitaGL's legacy immediate-mode pool corrupts this path on real
+	 * hardware.  The established Vita id Tech 3 ports submit each sky
+	 * row as a client-array triangle strip instead.
+	 */
+	vec3_t skyVertices[2 * (SKY_SUBDIVISIONS + 1)];
+	vec2_t skyTexCoords[2 * (SKY_SUBDIVISIONS + 1)];
+
+	GL_SelectTexture( 0 );
+	GL_Bind( image );
+	qglDisableClientState( GL_COLOR_ARRAY );
+	qglEnableClientState( GL_VERTEX_ARRAY );
+	qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+
+	for ( t = mins[1] + HALF_SKY_SUBDIVISIONS;
+	      t < maxs[1] + HALF_SKY_SUBDIVISIONS; t++ )
+	{
+		int numVertexes = 0;
+
+		for ( s = mins[0] + HALF_SKY_SUBDIVISIONS;
+		      s <= maxs[0] + HALF_SKY_SUBDIVISIONS; s++ )
+		{
+			Com_Memcpy( skyTexCoords[numVertexes],
+			            s_skyTexCoords[t][s], sizeof( vec2_t ) );
+			VectorCopy( s_skyPoints[t][s], skyVertices[numVertexes] );
+			numVertexes++;
+
+			Com_Memcpy( skyTexCoords[numVertexes],
+			            s_skyTexCoords[t + 1][s], sizeof( vec2_t ) );
+			VectorCopy( s_skyPoints[t + 1][s], skyVertices[numVertexes] );
+			numVertexes++;
+		}
+
+		qglTexCoordPointer( 2, GL_FLOAT, 0, skyTexCoords );
+		qglVertexPointer( 3, GL_FLOAT, 0, skyVertices );
+		qglDrawArrays( GL_TRIANGLE_STRIP, 0, numVertexes );
+	}
+
+	/* Match the renderer's normal fixed-function client-state baseline. */
+	qglEnableClientState( GL_COLOR_ARRAY );
+#else
 	GL_Bind( image );
 
 	for ( t = mins[1]+HALF_SKY_SUBDIVISIONS; t < maxs[1]+HALF_SKY_SUBDIVISIONS; t++ )
@@ -394,6 +436,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 		qglEnd();
 	}
+#endif
 }
 
 static void DrawSkyBox( shader_t *shader )
@@ -842,18 +885,8 @@ void RB_StageIteratorSky( void ) {
 		qglPopMatrix();
 
 #ifdef __vita__
-		/* DrawSkyBox routes through vitaGL's legacy immediate-mode
-		 * pool, which leaves ffp_dirty_vert / ffp_dirty_frag = GL_TRUE
-		 * (good — forces the next FFP draw to rebuild from app
-		 * pointers). The ONE thing we need: make sure
-		 * GL_VERTEX_ARRAY stays enabled — vitaGL's
-		 * _glDrawElements_FixedFunctionIMPL silently early-returns
-		 * if bit 0 of ffp_vertex_attrib_state is clear (draw.c:405)
-		 * and the previous "fix" that disabled the client states
-		 * actually CAUSED the m1l1 vertex artefact (legacy_pool
-		 * reused while glDrawElements no-oped). Leave every other
-		 * pointer/texture state alone. */
-		qglEnableClientState(GL_VERTEX_ARRAY);
+		/* DrawSkySide leaves the array state expected by generic draws. */
+		qglEnableClientState( GL_VERTEX_ARRAY );
 #endif
 	}
 
