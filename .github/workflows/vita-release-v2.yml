@@ -32,7 +32,11 @@ jobs:
             --name "OpenMoHAA-Vita-symbols" \
             --dir release-assets/symbols
           test -f release-assets/vpk/OpenMoHAA.vpk
-          test -f release-assets/symbols/OpenMoHAA-Vita-symbols.zip
+          (
+            cd release-assets/symbols
+            zip -r ../../OpenMoHAA-Vita-symbols.zip .
+          )
+          test -f OpenMoHAA-Vita-symbols.zip
 
       - name: Publish pre-release
         env:
@@ -42,7 +46,7 @@ jobs:
           tag="v0.0.2-vita.2"
           gh release create "$tag" \
             release-assets/vpk/OpenMoHAA.vpk \
-            release-assets/symbols/OpenMoHAA-Vita-symbols.zip \
+            OpenMoHAA-Vita-symbols.zip \
             --target "b5ca8ed6e57c3878622e6061f18053ce69b17c9c" \
             --title "OpenMoHAA Vita v0.0.2-vita.2" \
             --notes-file docs/releases/v0.0.2-vita.2.md \
