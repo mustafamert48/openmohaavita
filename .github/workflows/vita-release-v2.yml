@@ -1,0 +1,49 @@
+name: Publish PS Vita Release v0.0.2-vita.2
+
+on:
+  push:
+    branches:
+      - release/v0.0.2-vita.2
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download hardware-tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p release-assets/vpk release-assets/symbols
+          gh run download 32631654548 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "OpenMoHAA-Vita" \
+            --dir release-assets/vpk
+          gh run download 32631654548 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "OpenMoHAA-Vita-symbols" \
+            --dir release-assets/symbols
+          test -f release-assets/vpk/OpenMoHAA.vpk
+          test -f release-assets/symbols/OpenMoHAA-Vita-symbols.zip
+
+      - name: Publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          tag="v0.0.2-vita.2"
+          gh release create "$tag" \
+            release-assets/vpk/OpenMoHAA.vpk \
+            release-assets/symbols/OpenMoHAA-Vita-symbols.zip \
+            --target "b5ca8ed6e57c3878622e6061f18053ce69b17c9c" \
+            --title "OpenMoHAA Vita v0.0.2-vita.2" \
+            --notes-file docs/releases/v0.0.2-vita.2.md \
+            --prerelease
