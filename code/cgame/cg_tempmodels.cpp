@@ -1312,7 +1312,7 @@ void ClientGameCommandManager::SpawnTempModel(int mcount)
         ent.shaderTime = cg.time / 1000.0f;
 
         // Get the tikihandle
-        p->cgd.tiki = cgi.R_Model_GetHandle(ent.hModel);
+        p->cgd.SetTiki(cgi.R_Model_GetHandle(ent.hModel));
 
         // Set the reftype based on the modelname
         if (p->modelname == "*beam") {

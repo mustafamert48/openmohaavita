@@ -650,6 +650,14 @@ void R_AddSkelSurfaces(trRefEntity_t *ent)
 
     tiki = ent->e.tiki;
 
+    // A skeletal entity without a TIKI cannot be posed or rendered. This can
+    // occur when loading an older Vita save that archived a transient effect
+    // incompletely; skip it instead of dereferencing a null renderer object.
+    if (!tiki) {
+        ri.Printf(PRINT_DEVELOPER, "R_AddSkelSurfaces: skipped entity with no TIKI\n");
+        return;
+    }
+
     if (!vmEntity) {
         vmEntity = ri.Cvar_Get("viewmodelentity", "", 0);
     }
