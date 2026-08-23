@@ -186,7 +186,26 @@ void CG_ArchiveRefEntity(MemArchiver& archiver, refEntity_t* ref)
     ref->of = NULL;
     ref->nf = NULL;
 
+#ifdef __vita__
+    // ref->tiki is renderer-owned and may already be recycled. hModel is the
+    // stable registry handle and supplies the same model name safely.
+    str tikiName;
+    if (archiver.IsReading()) {
+        archiver.ArchiveString(&tikiName);
+        if (tikiName.length()) {
+            ref->tiki = cgi.R_Model_GetHandle(cgi.R_RegisterModel(tikiName.c_str()));
+        } else {
+            ref->tiki = NULL;
+        }
+    } else {
+        if (ref->hModel) {
+            tikiName = cgi.R_GetModelName(ref->hModel);
+        }
+        archiver.ArchiveString(&tikiName);
+    }
+#else
     CG_ArchiveTikiPointer(archiver, &ref->tiki);
+#endif
 
     archiver.ArchiveInteger(&ref->bonestart);
     archiver.ArchiveInteger(&ref->morphstart);
