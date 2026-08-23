@@ -3102,7 +3102,7 @@ spawnthing_t *ClientGameCommandManager::InitializeSpawnthing(spawnthing_t *sp)
     sp->cgd.lightType          = 0;
     sp->cgd.collisionmask      = MASK_AUTOCALCLIFE;
     sp->cgd.parent             = -1;
-    sp->cgd.tiki               = nullptr;
+    sp->cgd.SetTiki(nullptr);
     sp->cgd.lightstyle         = -1;
     sp->cgd.physicsRate        = cg_effect_physicsrate->integer;
     sp->cgd.shadername         = "beamshader";
@@ -3324,7 +3324,7 @@ void ClientGameCommandManager::BeginTagEmitter(Event *ev)
         );
     }
 
-    m_spawnthing->cgd.tiki = current_tiki;
+    m_spawnthing->cgd.SetTiki(current_tiki);
 }
 
 //===============
@@ -3369,7 +3369,7 @@ void ClientGameCommandManager::BeginTagBeamEmitter(Event *ev)
         }
     }
 
-    m_spawnthing->cgd.tiki = current_tiki;
+    m_spawnthing->cgd.SetTiki(current_tiki);
 }
 
 //===============
@@ -3407,7 +3407,7 @@ void ClientGameCommandManager::BeginOriginEmitter(Event *ev)
         );
     }
 
-    m_spawnthing->cgd.tiki = current_tiki;
+    m_spawnthing->cgd.SetTiki(current_tiki);
 }
 
 //===============
@@ -3444,7 +3444,7 @@ void ClientGameCommandManager::BeginOriginBeamEmitter(Event *ev)
         );
     }
 
-    m_spawnthing->cgd.tiki = current_tiki;
+    m_spawnthing->cgd.SetTiki(current_tiki);
     m_spawnthing->cgd.flags |= T_BEAMTHING;
 }
 
@@ -3513,7 +3513,7 @@ void ClientGameCommandManager::BeginTagSpawnLinked(Event *ev)
     m_spawnthing           = CreateNewEmitter();
     m_spawnthing->tagnum   = tagnum;
     m_spawnthing->entnum   = current_entity->entityNumber;
-    m_spawnthing->cgd.tiki = current_tiki;
+    m_spawnthing->cgd.SetTiki(current_tiki);
     m_spawnthing->cgd.flags |= T_WAVE;
     m_spawnthing->cgd.origin = current_entity->origin;
 
@@ -5134,42 +5134,6 @@ void ClientGameCommandManager::RestartAllEmitters(void)
 }
 
 //===============
-// ResetEmittersForLevelShutdown
-//===============
-int ClientGameCommandManager::ResetEmittersForLevelShutdown(void)
-{
-    int numFreed = 0;
-
-    // CG_RestartCommandManager frees active temp models first.  Any emitters
-    // left here have no live temp-model owners and belong to the level that is
-    // being torn down.  The Vita keeps this module resident, so explicitly
-    // destroy them before their TIKI/model storage is released.
-    while (m_emitters.NumObjects() > 0) {
-        const int     index = m_emitters.NumObjects();
-        spawnthing_t *sp    = m_emitters.ObjectAt(index);
-
-        m_emitters.RemoveObjectAt(index);
-        if (sp == m_spawnthing) {
-            m_spawnthing = NULL;
-        }
-
-        delete sp;
-        numFreed++;
-    }
-
-    m_spawnthing = NULL;
-
-    // The embedded local emitter is archived with the heap-owned emitters.
-    // Reconstruct it while the outgoing level heap is still valid so none of
-    // its strings, emitter times, or TIKI pointer can leak into the next map.
-    m_localemitter.~spawnthing_t();
-    ::new (&m_localemitter) spawnthing_t();
-    InitializeSpawnthing(&m_localemitter);
-
-    return numFreed;
-}
-
-//===============
 // CG_RestartCommandManager
 //===============
 void CG_RestartCommandManager()
@@ -5179,12 +5143,6 @@ void CG_RestartCommandManager()
     // Added in OPM
     //  Clean up all effect events when the server restarts
     commandManager.ResetPendingEvents();
-}
-
-void CG_ResetEmittersForLevelShutdown()
-{
-    int numFreed = commandManager.ResetEmittersForLevelShutdown();
-    cgi.DPrintf("[vita] cleared %d level emitters before cgame heap shutdown\n", numFreed);
 }
 
 //=================
@@ -6306,6 +6264,18 @@ void emitterthing_t::ArchiveToMemory(MemArchiver& archiver)
     archiver.ArchiveBoolean(&startoff);
 }
 
+void cg_common_data::SetTiki(dtiki_t *newTiki)
+{
+    tiki = newTiki;
+#ifdef __vita__
+    if (newTiki) {
+        tikiName = newTiki->name;
+    } else {
+        tikiName = "";
+    }
+#endif
+}
+
 void cg_common_data::ArchiveToMemory(MemArchiver& archiver)
 {
     archiver.ArchiveInteger(&life);
@@ -6337,7 +6307,20 @@ void cg_common_data::ArchiveToMemory(MemArchiver& archiver)
     archiver.ArchiveInteger(&flags);
     archiver.ArchiveInteger(&flags2);
 
+#ifdef __vita__
+    // Never dereference a renderer-owned TIKI during a save. The renderer may
+    // have recycled it even though this transient effect is still present.
+    archiver.ArchiveString(&tikiName);
+    if (archiver.IsReading()) {
+        if (tikiName.length()) {
+            tiki = cgi.R_Model_GetHandle(cgi.R_RegisterModel(tikiName.c_str()));
+        } else {
+            tiki = NULL;
+        }
+    }
+#else
     CG_ArchiveTikiPointer(archiver, &tiki);
+#endif
 
     archiver.ArchiveInteger(&swarmfreq);
     archiver.ArchiveFloat(&swarmmaxspeed);
