@@ -785,13 +785,6 @@ void CG_Shutdown(void)
     // Event pointers left in EffectsEventQueue.
     CG_RestartCommandManager();
 
-#ifdef __vita__
-    // Unlike desktop module reloads, Vita keeps commandManager alive.  Remove
-    // the outgoing level's owned emitters before their TIKI storage is freed;
-    // otherwise a later manual save archives stale model-name pointers.
-    CG_ResetEmittersForLevelShutdown();
-#endif
-
     L_ShutdownEvents();
     // Shutdown radar
     cgi.CL_InitRadar(NULL, NULL, -1);
