@@ -10,7 +10,7 @@ First hardware-tested milestone of the mustafamert48 Vita fork.
 - Engine boots and loads legitimate Medal of Honor: Allied Assault retail data from `ux0:data/openmohaa/main/`.
 - Base campaign gameplay is functional on real Vita hardware.
 - Forced multitexture (`r_vita_force_mtex 1`) restores substantially more correct diffuse + lightmap rendering than the legacy Vita fallback path.
-- `r_fastsky 1` provides a stable fallback for the still-broken full sky renderer.
+- Textured sky rendering works through a Vita-safe vertex-array path.
 - A practical baseline configuration was tested successfully at native 960x544 with a 30 FPS cap.
 - Campaign progression from `m1l1` into `m1l2a` has been observed successfully on hardware.
 
@@ -32,7 +32,7 @@ set r_vita_force_mtex 1
 set r_ext_multitexture 1
 set r_vertexLight 0
 set r_lightmap 0
-set r_fastsky 1
+set r_fastsky 0
 
 set com_maxfps 30
 ```
@@ -40,9 +40,9 @@ set com_maxfps 30
 ### Known issues
 
 - Performance remains highly scene-dependent. Roughly 25-30 FPS is possible in lighter scenes, while NPC-heavy combat can fall to around 10 FPS.
-- Full sky rendering with `r_fastsky 0` is still broken on Vita; malformed/stretched sky geometry is visible. Keep `r_fastsky 1` for normal testing.
-- Level-transition crashes are intermittent. `m1l1 -> m1l2a` can succeed, but transition/runtime state still needs further hardening.
-- Save entries can appear in the UI while loading reports `Savegame not found`; save/load path handling remains unfinished.
+- Automatic transition saves remain disabled, while the tested cgame cleanup allows natural `m1l1 -> m1l2a` progression.
+- Fresh manual saves now write the complete `.sav`, `.ssv`, and `.tga` set and load successfully. Incomplete slots made by older Vita builds cannot be recovered.
+- `r_vita_vbo_world` remains experimental and disabled by default.
 - Expansion folders (`mainta`, `maintt`) are not part of the current Vita base-game target.
 - The port remains experimental; this is a development/testing milestone, not a stable release.
 
