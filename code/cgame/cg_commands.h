@@ -156,6 +156,11 @@ public:
     int      flags;
     int      flags2;
     dtiki_t *tiki;
+#ifdef __vita__
+    // Renderer-owned TIKI storage can be recycled before a manual save. Keep
+    // the model name captured while the pointer is known to be valid.
+    str      tikiName;
+#endif
     int      swarmfreq;
     float    swarmmaxspeed;
     float    swarmdelta;
@@ -185,6 +190,7 @@ public:
     float spin_rotation;
 
 public:
+    void SetTiki(dtiki_t *newTiki);
     void ArchiveToMemory(MemArchiver& archiver);
 };
 
@@ -214,6 +220,9 @@ inline cg_common_data::cg_common_data()
     fadeintime         = 0;
     parent             = 0;
     tiki               = nullptr;
+#ifdef __vita__
+    tikiName           = "";
+#endif
     collisionmask      = 0;
     min_twinkletimeoff = 0;
     max_twinkletimeoff = 0;
@@ -948,7 +957,6 @@ public:
     void          FreeAllTempModels(void);
     void          FreeSomeTempModels(void);
     void          RestartAllEmitters(void);
-    int           ResetEmittersForLevelShutdown(void);
 
     void InitializeTempModels(void);
     void InitializeTempModelCvars(void);
