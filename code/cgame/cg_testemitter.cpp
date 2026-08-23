@@ -1927,7 +1927,7 @@ void CG_TestEmitter_f(void)
     VectorSet(angles, 0, cg.refdefViewAngles[1], 0);
     AnglesToAxis(angles, pCurrSpawnthing->axis);
 
-    pCurrSpawnthing->cgd.tiki = NULL;
+    pCurrSpawnthing->cgd.SetTiki(NULL);
     CG_SetTestEmitterValues();
 
     pCurrCommand    = NULL;

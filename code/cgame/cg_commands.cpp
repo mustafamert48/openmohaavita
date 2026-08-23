@@ -6209,6 +6209,35 @@ void ctempmodel_t::ArchiveToMemory(MemArchiver& archiver)
     CG_ArchiveRefEntity(archiver, &lastEnt);
     CG_ArchiveRefEntity(archiver, &ent);
 
+#ifdef __vita__
+    // Early Vita saves can contain a valid archived render-model handle but no
+    // cg_common_data TIKI name. Recover the shared TIKI before AddTempModels()
+    // copies cgd.tiki back onto the render entity.
+    if (archiver.IsReading() && !cgd.tiki) {
+        dtiki_t *restoredTiki = ent.tiki ? ent.tiki : lastEnt.tiki;
+
+        if (!restoredTiki) {
+            qhandle_t handle = ent.hModel ? ent.hModel : lastEnt.hModel;
+            if (handle) {
+                restoredTiki = cgi.R_Model_GetHandle(handle);
+            }
+        }
+
+        if (!restoredTiki && modelname.length()) {
+            qhandle_t handle = cgi.R_RegisterModel(modelname.c_str());
+            if (handle) {
+                restoredTiki = cgi.R_Model_GetHandle(handle);
+            }
+        }
+
+        if (restoredTiki) {
+            cgd.SetTiki(restoredTiki);
+            ent.tiki     = restoredTiki;
+            lastEnt.tiki = restoredTiki;
+        }
+    }
+#endif
+
     archiver.ArchiveInteger(&number);
     archiver.ArchiveTime(&lastAnimTime);
     archiver.ArchiveTime(&lastPhysicsTime);

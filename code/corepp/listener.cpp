@@ -543,7 +543,14 @@ void L_ClearEventList()
 
     LL_Reset(&Event::EventQueue, next, prev);
 
+#if !defined(__vita__)
     Event_allocator.FreeAll();
+#else
+    // Some cgame effect commands own reusable Event objects across map loads.
+    // The queued events above have already been deleted and returned to the
+    // allocator, but freeing the whole pool here would also invalidate those
+    // persistent command Events and cause a use-after-free in the next map.
+#endif
 
 #if defined(GAME_DLL)
     AnimationEvent_allocator.FreeAll();
