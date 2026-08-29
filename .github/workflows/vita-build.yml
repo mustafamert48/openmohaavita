@@ -2,7 +2,7 @@ name: Build PS Vita VPK
 
 on:
   push:
-    branches: [vita-port, chatgpt-vita-build, chatgpt-vita-build2, vita-sky-arrays-test]
+    branches: [vita-port, chatgpt-vita-build, chatgpt-vita-build2, vita-sky-arrays-test, vita-performance-cleanup-test]
   pull_request:
     branches: [vita-port]
   workflow_dispatch:

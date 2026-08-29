@@ -1441,16 +1441,25 @@ void GLimp_EndFrame( void )
 		{
 			/* Time the swap separately so we can see how much of
 			 * SCR_UpdateScreen is just waiting for the GPU to finish
-			 * the queued commands. Print 1x/sec. */
-			extern int Sys_Milliseconds(void);
-			static int s_lastSwapPrint = 0;
-			int swap_t0 = Sys_Milliseconds();
-			vglSwapBuffers( 1 );
-			int swap_t1 = Sys_Milliseconds();
-			int now = swap_t1;
-			if ((now - s_lastSwapPrint) >= 1000) {
-				s_lastSwapPrint = now;
-				ri.Printf(PRINT_ALL, "GFX-SWAP: vglSwapBuffers=%d ms\n", swap_t1 - swap_t0);
+			 * the queued commands. Print 1x/sec when explicitly enabled. */
+			static cvar_t *s_vitaPerfLog = NULL;
+			if (!s_vitaPerfLog) {
+				s_vitaPerfLog = ri.Cvar_Get("r_vita_perflog", "0", CVAR_ARCHIVE);
+			}
+
+			if (s_vitaPerfLog && s_vitaPerfLog->integer) {
+				extern int Sys_Milliseconds(void);
+				static int s_lastSwapPrint = 0;
+				int swap_t0 = Sys_Milliseconds();
+				int swap_t1;
+				vglSwapBuffers( 1 );
+				swap_t1 = Sys_Milliseconds();
+				if ((swap_t1 - s_lastSwapPrint) >= 1000) {
+					s_lastSwapPrint = swap_t1;
+					ri.Printf(PRINT_ALL, "GFX-SWAP: vglSwapBuffers=%d ms\n", swap_t1 - swap_t0);
+				}
+			} else {
+				vglSwapBuffers( 1 );
 			}
 		}
 		{ extern void Vita_BootSplash_NoteEngineFrame(void);

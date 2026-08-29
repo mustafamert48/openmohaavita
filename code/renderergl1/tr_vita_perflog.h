@@ -7,13 +7,12 @@ in the render pipeline so we can identify the bottleneck without doing
 multiple build-test cycles. Throttled print every 1 sec gives averages
 across that interval (much more representative than single-frame samples).
 
-Gated by cvar r_vita_perflog. Default 1 so data is collected; flip 0 via
-the in-game perf menu (Select button → DEBUG category) to remove the
-microsecond timer overhead when actually playing.
+Gated by cvar r_vita_perflog. Default 0 so release gameplay performs no
+profiling timer calls; enable it from the developer menu only when collecting
+a diagnostic log.
 
-ALL instrumentation cost: 1 Sys_Milliseconds() per measurement + an int
-addition. ~µs per call. Negligible compared to the 280μs+ per draw we're
-measuring.
+Each enabled measurement calls Sys_Milliseconds(), which is useful for
+diagnostics but intentionally absent from the release path.
 =============================================================================
 */
 

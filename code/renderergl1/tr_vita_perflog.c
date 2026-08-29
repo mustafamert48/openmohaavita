@@ -14,7 +14,7 @@ cvar_t         *r_vita_perflog = NULL;
 
 void VitaPerf_Init(void)
 {
-    r_vita_perflog = ri.Cvar_Get("r_vita_perflog", "1", CVAR_ARCHIVE);
+    r_vita_perflog = ri.Cvar_Get("r_vita_perflog", "0", CVAR_ARCHIVE);
     Com_Memset(&g_vitaPerf, 0, sizeof(g_vitaPerf));
 }
 

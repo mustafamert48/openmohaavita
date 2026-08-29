@@ -243,35 +243,49 @@ void UIWindowManager::UpdateViews(void)
 
 #ifdef __vita__
     /* Time each top-level widget so we can see which one (view3d or a
-     * stale menu still in the tree) is eating frame time in gameplay. */
+     * stale menu still in the tree) is eating frame time in gameplay.
+     * Do not call the system timer at all unless profiling is enabled. */
     extern int Sys_Milliseconds(void);
-    int        _uv_t0 = Sys_Milliseconds();
+    static cvar_t *_uv_perfLog = NULL;
+    qboolean   _uv_profile;
+    int        _uv_t0 = 0;
     int        _uv_bgms = 0, _uv_childms = 0;
     int        _uv_bigChild = -1, _uv_bigChildMs = 0;
     static int _uv_lastPrint = 0;
-    qboolean   _uv_doPrint = (_uv_t0 - _uv_lastPrint) >= 1000;
+    qboolean   _uv_doPrint = qfalse;
+
+    if (!_uv_perfLog) {
+        _uv_perfLog = uii.Cvar_Find("r_vita_perflog");
+    }
+    _uv_profile = _uv_perfLog && _uv_perfLog->integer;
+    if (_uv_profile) {
+        _uv_t0 = Sys_Milliseconds();
+        _uv_doPrint = (_uv_t0 - _uv_lastPrint) >= 1000;
+    }
 #endif
 
     if (m_backgroundwidget) {
         m_backgroundwidget->Display(m_frame, 1.0);
 #ifdef __vita__
-        _uv_bgms = Sys_Milliseconds() - _uv_t0;
+        if (_uv_profile) _uv_bgms = Sys_Milliseconds() - _uv_t0;
 #endif
 
         n = m_children.NumObjects();
         for (i = 1; i <= n; i++) {
             if (m_children.ObjectAt(i) != m_backgroundwidget) {
 #ifdef __vita__
-                int _uv_tc0 = Sys_Milliseconds();
+                int _uv_tc0 = _uv_profile ? Sys_Milliseconds() : 0;
 #endif
                 m_children.ObjectAt(i)->Display(m_frame, 1.0);
 #ifdef __vita__
-                int _uv_tc1 = Sys_Milliseconds();
-                int _uv_dt  = _uv_tc1 - _uv_tc0;
-                _uv_childms += _uv_dt;
-                if (_uv_dt > _uv_bigChildMs) {
-                    _uv_bigChildMs = _uv_dt;
-                    _uv_bigChild   = i;
+                if (_uv_profile) {
+                    int _uv_tc1 = Sys_Milliseconds();
+                    int _uv_dt  = _uv_tc1 - _uv_tc0;
+                    _uv_childms += _uv_dt;
+                    if (_uv_dt > _uv_bigChildMs) {
+                        _uv_bigChildMs = _uv_dt;
+                        _uv_bigChild   = i;
+                    }
                 }
 #endif
             }
@@ -281,7 +295,7 @@ void UIWindowManager::UpdateViews(void)
     }
 
 #ifdef __vita__
-    if (_uv_doPrint) {
+    if (_uv_profile && _uv_doPrint) {
         _uv_lastPrint = _uv_t0;
         const char *_uv_bigName = "?";
         if (_uv_bigChild >= 1 && _uv_bigChild <= m_children.NumObjects()) {
