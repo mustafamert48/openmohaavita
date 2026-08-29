@@ -77,7 +77,7 @@ Then copy the contents of `./out-main` to `ux0:data/openmohaa/main/`.
 | R | Fire |
 | D-pad left / right | Previous / next weapon |
 | D-pad up | Alternate use |
-| Select | Objectives / score |
+| Select | Open / close the Vita dev menu |
 | Start | Menu |
 
 The M1 Garand does not have a normal iron-sight zoom in the original game and cannot be topped up before the clip is empty. The L binding works only for weapons with a secondary attack or scope.
@@ -88,17 +88,13 @@ The M1 Garand does not have a normal iron-sight zoom in the original game and ca
 
 Loading a recent save was measured at roughly 178 seconds: about 122 seconds restoring the server/save state and 56 seconds initializing the client. CPU overclocking does not remove the underlying bottleneck.
 
-### Cheat menu entries
+### Select-button dev menu
 
-The current menu's **Cheats ON** action is incomplete, and its **God Mode** action sends the wrong command. As a temporary workaround, add these lines to `ux0:data/openmohaa/main/configs/omconfig.cfg`:
+Press **Select** during gameplay to open the Vita dev/performance menu. Use **D-pad left/right** to change category, **D-pad up/down** to select an item, **Cross** to toggle or run it, and **Circle** or **Select** to close the menu.
 
-```cfg
-seta thereisnomonkey "1"
-seta cheats "1"
-alias god "dog"
-```
+The menu provides quick access to level loading, game commands, world rendering, lighting, effects, aim settings, texture quality and diagnostic options. For example, the crosshair can be toggled globally under **Effects**, or separately for hip fire and aiming under **Aim**.
 
-Restart the app after editing the file. `dog` is the command used by the game; the alias makes the familiar `god` spelling work too.
+Some entries are experimental or intended for debugging and may not work as expected. Renderer and diagnostic toggles can also reduce performance or produce incorrect visuals, so change them one at a time when testing.
 
 ### Incomplete older saves
 
