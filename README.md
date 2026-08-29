@@ -51,17 +51,18 @@ You need a homebrew-capable PS Vita and your own legitimate copy of *Medal of Ho
    ux0:data/openmohaa/main/
    ```
 
-4. Copy every `Pak*.pk3` from your installation. `Pak0.pk3` through `Pak5.pk3` are expected for the patched base game. Localized editions may include an additional language pak.
-5. Copy loose `music/` and `sound/` files if your installation keeps them outside the paks.
-6. Launch OpenMoHAA from LiveArea.
+4. Copy the following data from your retail installation:
 
-You can prepare a correctly laid-out data directory on a computer with:
+   | File or folder | Requirement | Notes |
+   |---|---|---|
+   | `Pak0.pk3` – `Pak3.pk3` | Required | Base-game data from the retail installation. |
+   | `Pak4.pk3` – `Pak5.pk3` | Required | Data from the official 1.11 update. |
+   | Other `Pak*.pk3` files | Copy when present | Includes language and additional official data such as `Pak6EnUk.pk3` or `pak7.pk3`. Copy every pak supplied by your installation. |
+   | `music/` | Copy when present | Loose background-music files stored outside the paks. |
+   | `sound/` | Copy when present | Loose audio must keep the correct subfolders and lowercase filenames for Vita's case-sensitive lookup. |
+   | `video/` | Copy when present | RoQ intro and cinematic files stored outside the paks. |
 
-```sh
-misc/console/prepare-data.sh /path/to/retail/main ./out-main vita
-```
-
-Then copy the contents of `./out-main` to `ux0:data/openmohaa/main/`.
+5. Launch OpenMoHAA from LiveArea. The engine creates its own `configs/` and `save/` folders; do not copy them from the computer installation.
 
 ## Default controls
 
@@ -87,6 +88,12 @@ The M1 Garand does not have a normal iron-sight zoom in the original game and ca
 ### Long loading times
 
 Loading a recent save was measured at roughly 178 seconds: about 122 seconds restoring the server/save state and 56 seconds initializing the client. CPU overclocking does not remove the underlying bottleneck.
+
+### Mission briefings are currently skipped
+
+The startup videos—EA logo, title and legal screens—are enabled. However, the six interactive campaign briefing maps are deliberately redirected to their corresponding first gameplay levels on Vita.
+
+This workaround was added during the original Vita bring-up because loading a briefing and then starting its mission performed a second game-module initialization with stale state, causing crashes. Later transition fixes may make the redirect unnecessary, but the briefing path has not yet been safely re-enabled and tested on hardware.
 
 ### Select-button dev menu
 
