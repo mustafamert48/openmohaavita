@@ -1,21 +1,21 @@
 # OpenMoHAA Vita
 
-[![Vita build](https://github.com/mustafamert48/openmohaavita/actions/workflows/vita-build.yml/badge.svg?branch=vita-port)](https://github.com/mustafamert48/openmohaavita/actions/workflows/vita-build.yml)
-[![Latest release](https://img.shields.io/github/v/release/mustafamert48/openmohaavita?include_prereleases&label=Vita%20release)](https://github.com/mustafamert48/openmohaavita/releases/tag/v0.0.2-vita.2)
-[![License](https://img.shields.io/github/license/mustafamert48/openmohaavita)](COPYING.txt)
+[![Vita build](https://github.com/ChatProductions/openmohaavita/actions/workflows/vita-build.yml/badge.svg?branch=vita-port)](https://github.com/ChatProductions/openmohaavita/actions/workflows/vita-build.yml)
+[![Latest release](https://img.shields.io/github/v/release/ChatProductions/openmohaavita?include_prereleases&label=Vita%20release)](https://github.com/ChatProductions/openmohaavita/releases/tag/v0.0.2-vita.2)
+[![License](https://img.shields.io/github/license/ChatProductions/openmohaavita)](COPYING.txt)
 
 ![OpenMoHAA](misc/openmohaa-text-sm.png)
 
-An experimental PlayStation Vita port of [OpenMoHAA](https://github.com/openmoh/openmohaa), the open-source reimplementation of *Medal of Honor: Allied Assault*.
+An experimental PlayStation Vita port of [OpenMoHAA](https://github.com/openmoh/openmohaa), maintained by **Chat Productions**.
 
 > [!IMPORTANT]
-> **This is a vibe-coded, AI-assisted hobby project.** Much of the Vita-specific work has been drafted with ChatGPT/Codex, then built in CI and tested iteratively on real Vita hardware by the repository owner. A green build does not prove that a change is correct; crash dumps, logs and repeatable hardware tests decide what ships. This fork is independent of, and not endorsed by, the upstream OpenMoHAA maintainers.
+> **This is a vibe-coded, AI-assisted hobby project.** Much of the Vita-specific work has been drafted with ChatGPT/Codex, then built in CI and tested iteratively on real Vita hardware by Chat Productions. A green build does not prove that a change is correct; crash dumps, logs and repeatable hardware tests decide what ships. This fork is independent of, and not endorsed by, the upstream OpenMoHAA maintainers.
 
 The port is playable, but it is not finished. Back up your saves and expect rough edges.
 
 ## Current progress
 
-Status as of **29 August 2026**, using [`v0.0.2-vita.2`](https://github.com/mustafamert48/openmohaavita/releases/tag/v0.0.2-vita.2):
+Status as of **29 August 2026**, using [`v0.0.2-vita.2`](https://github.com/ChatProductions/openmohaavita/releases/tag/v0.0.2-vita.2):
 
 | Area | Status | Hardware-tested result |
 |---|---|---|
@@ -43,7 +43,7 @@ See the [Vita milestone history](docs/VITA_CHANGELOG.md) for more detail.
 
 You need a homebrew-capable PS Vita and your own legitimate copy of *Medal of Honor: Allied Assault*. This repository and its releases do **not** contain EA game data.
 
-1. Download `OpenMoHAA.vpk` from the [latest release](https://github.com/mustafamert48/openmohaavita/releases/tag/v0.0.2-vita.2).
+1. Download `OpenMoHAA.vpk` from the [latest release](https://github.com/ChatProductions/openmohaavita/releases/tag/v0.0.2-vita.2).
 2. Install the VPK with VitaShell.
 3. Copy your retail game data to:
 
@@ -106,7 +106,7 @@ A loadable slot needs `.sav`, `.ssv` and `.tga` files. Old Vita builds sometimes
 
 ## Reporting a Vita problem
 
-[Open an issue](https://github.com/mustafamert48/openmohaavita/issues) and include:
+[Open an issue](https://github.com/ChatProductions/openmohaavita/issues) and include:
 
 - the release or commit you tested;
 - the mission/map and the exact sequence before the problem;
@@ -129,6 +129,7 @@ Do not submit this fork's AI-derived changes to upstream OpenMoHAA as if they we
 
 ## Credits and license
 
+- Chat Productions maintains the Vita port and performs the real-hardware testing documented here.
 - [OpenMoHAA](https://github.com/openmoh/openmohaa) and its contributors provide the engine this port is based on.
 - [VitaSDK](https://vitasdk.org/) supplies the Vita toolchain and platform libraries.
 - [vitaGL](https://github.com/Rinnegatamante/vitaGL) provides the OpenGL-compatible rendering layer used on Vita.
