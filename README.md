@@ -9,7 +9,7 @@
 An experimental PlayStation Vita port of [OpenMoHAA](https://github.com/openmoh/openmohaa), maintained by **Chat Productions**.
 
 > [!IMPORTANT]
-> **This is a vibe-coded, AI-assisted hobby project.** Much of the Vita-specific work has been drafted with ChatGPT/Codex, then built in CI and tested iteratively on real Vita hardware by Chat Productions. A green build does not prove that a change is correct; crash dumps, logs and repeatable hardware tests decide what ships. This fork is independent of, and not endorsed by, the upstream OpenMoHAA maintainers.
+> **This is a vibe-coded, AI-assisted hobby project.** Much of the Vita-specific work has been drafted with ChatGPT/Codex, then built in CI and tested iteratively on real Vita hardware. A green build does not prove that a change is correct; crash dumps, logs and repeatable hardware tests decide what ships. This fork is independent of, and not endorsed by, the upstream OpenMoHAA maintainers.
 
 The port is playable, but it is not finished. Back up your saves and expect rough edges.
 
