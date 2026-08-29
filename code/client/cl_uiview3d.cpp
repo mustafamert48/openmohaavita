@@ -160,14 +160,13 @@ static VitaPerfMenuItem g_pmGame[] = {
     { "Main Menu",        NULL, qfalse, 0, "disconnect" },
     { "Restart Level",    NULL, qfalse, 0, "restart" },
     { "Suicide (kill)",   NULL, qfalse, 0, "kill" },
-    { "Cheats ON",        NULL, qfalse, 0, "cheats 1" },
-    { "Cheats OFF",       NULL, qfalse, 0, "cheats 0" },
-    { "God Mode",         NULL, qfalse, 0, "god" },
-    { "Noclip",           NULL, qfalse, 0, "noclip" },
-    { "Notarget",         NULL, qfalse, 0, "notarget" },
-    { "Give All",         NULL, qfalse, 0, "give all" },
-    { "Give Ammo",        NULL, qfalse, 0, "give ammo" },
-    { "Give Health",      NULL, qfalse, 0, "give health" },
+    { "Enable Cheats",    NULL, qfalse, 0, "vita_cheats_on" },
+    { "Disable Cheats",   NULL, qfalse, 0, "vita_cheats_off" },
+    { "God Mode",         NULL, qfalse, 0, "vita_cheats_on; god" },
+    { "Noclip",           NULL, qfalse, 0, "vita_cheats_on; noclip" },
+    { "Notarget",         NULL, qfalse, 0, "vita_cheats_on; notarget" },
+    { "Weapons + Ammo",   NULL, qfalse, 0, "vita_cheats_on; wuss" },
+    { "Full Health",      NULL, qfalse, 0, "vita_cheats_on; fullheal" },
 };
 
 static VitaPerfMenuCategory g_pmCats[] = {
@@ -346,7 +345,7 @@ void CL_VitaPerfMenu_Draw(class UIFont *menuFont, float screenW, float screenH)
     /* Header with category tabs. Highlight current. */
     float y = boxY + 16.0f;
     char  hdr[256];
-    Com_sprintf(hdr, sizeof(hdr), "PERF MENU  --  D-pad to navigate, A toggle, B close");
+    Com_sprintf(hdr, sizeof(hdr), "VITA DEV MENU  --  D-pad navigate, Cross select, Circle close");
     menuFont->setColor(UWhite);
     menuFont->Print(boxX + 12.0f, y, hdr, -1, NULL);
     y += 22.0f;
@@ -387,9 +386,29 @@ void CL_VitaPerfMenu_Draw(class UIFont *menuFont, float screenW, float screenH)
     re.SetColor(NULL);
 }
 
+static void CL_VitaCheatsOn_f(void)
+{
+    /* MOHAA requires both variables. `cheats` is normally latched, so a
+     * regular console assignment cannot enable it in a running campaign.
+     * The Vita dev menu is local-only and explicitly requested by the user;
+     * force the integrated single-player server's live cvar instead. */
+    Cvar_Set2("thereisnomonkey", "1", qtrue);
+    Cvar_Set2("cheats", "1", qtrue);
+    Com_Printf("VITA DEV MENU: cheats enabled\n");
+}
+
+static void CL_VitaCheatsOff_f(void)
+{
+    Cvar_Set2("thereisnomonkey", "0", qtrue);
+    Cvar_Set2("cheats", "0", qtrue);
+    Com_Printf("VITA DEV MENU: cheats disabled\n");
+}
+
 void CL_VitaPerfMenu_Init(void)
 {
     Cmd_AddCommand("perfmenu", CL_VitaPerfMenu_Toggle_f);
+    Cmd_AddCommand("vita_cheats_on", CL_VitaCheatsOn_f);
+    Cmd_AddCommand("vita_cheats_off", CL_VitaCheatsOff_f);
 }
 #endif
 

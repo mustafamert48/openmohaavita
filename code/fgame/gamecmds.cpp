@@ -92,6 +92,9 @@ void G_InitConsoleCommands(void)
     //
     gi.AddCommand("give", NULL);
     gi.AddCommand("god", NULL);
+    gi.AddCommand("dog", NULL);
+    gi.AddCommand("wuss", NULL);
+    gi.AddCommand("fullheal", NULL);
     gi.AddCommand("notarget", NULL);
     gi.AddCommand("noclip", NULL);
     gi.AddCommand("kill", NULL);
@@ -163,6 +166,7 @@ void G_ClientCommand(gentity_t *ent)
 qboolean G_ProcessClientCommand(gentity_t *ent)
 {
     const char   *cmd;
+    const char   *eventCmd;
     consolecmd_t *cmds;
     int           i;
     int           n;
@@ -179,6 +183,10 @@ qboolean G_ProcessClientCommand(gentity_t *ent)
     allowDev = g_gametype->integer == GT_SINGLE_PLAYER;
 
     cmd = gi.Argv(0);
+    /* Allied Assault exposes god mode as the oddly named `dog` Event.
+     * Accept the conventional `god` spelling too, including commands sent
+     * by the Vita developer menu. */
+    eventCmd = !Q_stricmp(cmd, "god") ? "dog" : cmd;
 
     player                = (Player *)ent->entity;
     player->m_lastcommand = cmd;
@@ -194,8 +202,8 @@ qboolean G_ProcessClientCommand(gentity_t *ent)
         }
     }
 
-    if (Event::Exists(cmd)) {
-        ConsoleEvent ev(cmd);
+    if (Event::Exists(eventCmd)) {
+        ConsoleEvent ev(eventCmd);
         ev.SetConsoleEdict(ent);
 
         n = gi.Argc();
@@ -204,12 +212,12 @@ qboolean G_ProcessClientCommand(gentity_t *ent)
             ev.AddToken(gi.Argv(i));
         }
 
-        if (!Q_stricmpn(cmd, "lod_", 4)) {
+        if (!Q_stricmpn(eventCmd, "lod_", 4)) {
             if (!allowDev) {
                 return false;
             }
             return LODModel.ProcessEvent(ev);
-        } else if (!Q_stricmpn(cmd, "view", 4)) {
+        } else if (!Q_stricmpn(eventCmd, "view", 4)) {
             if (!allowDev) {
                 return false;
             }
@@ -218,7 +226,7 @@ qboolean G_ProcessClientCommand(gentity_t *ent)
             //
             // Added in OPM
             //
-            Listener *master = G_FindMaster(cmd);
+            Listener *master = G_FindMaster(eventCmd);
             if (master) {
                 return master->ProcessEvent(ev);
             }
