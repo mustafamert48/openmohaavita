@@ -1,227 +1,145 @@
-# OpenMoHAA on the PlayStation Vita
+# Building and debugging OpenMoHAA Vita
 
-Single-player Medal of Honor: Allied Assault running natively on the
-PS Vita as a homebrew app, built on top of OpenMoHAA's existing
-SDL2 / OpenGL renderer.
+This document covers the experimental PlayStation Vita target in this fork. For the user-facing status, installation instructions and controls, start with the [project README](../README.md).
 
-## What works
+## Scope
 
-- Full engine bring-up: filesystem (pk3 mounting), config exec, client
-  initialisation, renderer, audio, scripting (TIKI), AI.
-- Single-player campaign (Allied Assault base game).
-- Spearhead and Breakthrough expansions, if their pk3s are present.
-- Native dual-analog control via SDL_GameController.
-- 960x544 fullscreen, vsync enabled, vitaGL (OpenGL ES → GXM).
+The current Vita release targets the base *Medal of Honor: Allied Assault* campaign using data in `ux0:data/openmohaa/main/`.
 
-## What's stubbed (multiplayer + dev tooling)
+Single-player is the focus. Multiplayer is disabled because the existing network and GameSpy paths are stubbed on Vita. Spearhead and Breakthrough are not part of the current hardware-test scope.
 
-The following subsystems are intentionally disabled because the Vita
-SDK either does not ship the underlying API (BSD sockets) or because
-the feature has no meaningful counterpart on the platform. Single-
-player gameplay is unaffected.
+## Host requirements
 
-| Subsystem | Reason | Source of stubs |
-|---|---|---|
-| GameSpy SDK (~30 funcs) | No BSD sockets, GameSpy masters defunct since 2014 | `code/gamespy/gamespy_vita_stub.c` |
-| `net_ip.c` (UDP/TCP) | vitasdk uses `sceNet`, not BSD; SP needs no networking | `code/qcommon/net_vita.c` |
-| `cl_uiserverlist.cpp` | Pulls GameSpy types | gated in `cmake/client.cmake` |
-| `libmumblelink.c` (voice) | Needs `sys/mman.h` (no mmap on Vita) | gated in `cmake/client.cmake` |
-| Launcher binaries | Vita has no multi-binary picker concept | gated in `CMakeLists.txt` |
-| 8 desktop GL legacy entry points | vitaGL is GL ES based; never called by GL1 path | `code/sdl/vita_gl_stubs.c` |
-| `mkfifo` (Sys_Mkfifo) | dedicated-server console FIFO, not built on Vita | gated in `code/sys/sys_unix.c` |
-| `_kill_r` for arbitrary signals | vitasdk newlib only handles SIGINT/SIGTERM | `Sys_PIDIsRunning` returns true if pid==self |
+- Linux, macOS or Windows with WSL
+- CMake 3.25 or newer
+- Bison 3.5.1 or newer
+- Flex 2.6.4 or newer
+- [VitaSDK](https://vitasdk.org/), with `VITASDK` set
 
-## Build
+The CI workflow in [`.github/workflows/vita-build.yml`](../.github/workflows/vita-build.yml) is the reproducible reference build.
 
-### Host requirements
+## Install VitaSDK dependencies
 
-- macOS, Linux, or Windows with WSL
-- CMake ≥ 3.25
-- Bison ≥ 3.5.1, Flex ≥ 2.6.4
-- A vitasdk install (sets `$VITASDK`)
-
-### vitasdk + libs
+Using `vdpm`:
 
 ```sh
-git clone https://github.com/vitasdk/vdpm
-cd vdpm
-export VITASDK=$HOME/vitasdk         # or /usr/local/vitasdk
-./bootstrap-vitasdk.sh
-# Install runtime deps (vitaGL, SDL2, OpenAL, codecs, ...)
-for pkg in zlib bzip2 libpng libjpeg-turbo \
-           sdl2 openal-soft openssl curl \
-           libogg libvorbis opus opusfile libmad \
-           libmathneon vitaShaRK vitaGL SceShaccCgExt \
-           kubridge taihen vita-rss-libdl ; do
-  ./vdpm -f $pkg
-done
+vdpm install \
+  zlib bzip2 libpng libjpeg-turbo sdl2 openal-soft openssl curl \
+  libogg libvorbis opus opusfile libmad libmathneon vitaShaRK vitaGL \
+  SceShaccCgExt kubridge taihen vita-rss-libdl
 ```
 
-### librt stub
-
-vitasdk does not ship `librt` (POSIX realtime — `clock_gettime` lives
-in `libc` here). pkg-config files for `ogg`/`vorbis`/`opus` inherit
-`-lrt` from upstream Linux builds, which the linker then can't find.
-Drop a small empty stub once:
+Some dependency metadata requests `librt`, although VitaSDK provides the required time functions through libc. If the linker cannot find `-lrt`, create the same compatibility archive used by CI:
 
 ```sh
-echo 'void __vita_librt_stub(void) {}' > /tmp/librt_stub.c
-$VITASDK/bin/arm-vita-eabi-gcc -c /tmp/librt_stub.c -o /tmp/librt_stub.o
-$VITASDK/bin/arm-vita-eabi-ar rcs $VITASDK/arm-vita-eabi/lib/librt.a /tmp/librt_stub.o
+printf 'void __vita_librt_stub(void) {}\n' > /tmp/librt_stub.c
+"$VITASDK/bin/arm-vita-eabi-gcc" -c /tmp/librt_stub.c -o /tmp/librt_stub.o
+"$VITASDK/bin/arm-vita-eabi-ar" rcs \
+  "$VITASDK/arm-vita-eabi/lib/librt.a" /tmp/librt_stub.o
 ```
 
-### Configure + build
+## Configure and build
 
 ```sh
-mkdir build-vita && cd build-vita
-cmake -DCMAKE_TOOLCHAIN_FILE=$VITASDK/share/vita.toolchain.cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      ..
-cmake --build . -j$(nproc)
+cmake -S . -B build-vita \
+  -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -G Ninja
+
+cmake --build build-vita -j2
 ```
 
-The `OpenMoHAA.vpk` lands in `build-vita/`.
+The package is written to `build-vita/OpenMoHAA.vpk`.
 
-## Install on the Vita
+Keep the unstripped `openmohaa`, `game.elf`, `cgame.elf` and VELF files from the exact build. Vita crash addresses are useful only when resolved against matching symbols.
 
-1. Vita CFW required (HENkaku/h-encore/Enso).
-2. Copy `OpenMoHAA.vpk` to the Vita (FTP via VitaShell or USB).
-3. Install in VitaShell (X → Install).
-4. Copy your legitimate MoH:AA install to:
-   ```
-   ux0:data/openmohaa/main/        Pak0..Pak5.pk3, music/, sound/, video/
-   ux0:data/openmohaa/mainta/      Spearhead pk3s (optional)
-   ux0:data/openmohaa/maintt/      Breakthrough pk3s (optional)
-   ```
-5. Launch from the LiveArea bubble.
+## Install and data layout
 
-The stock Vita CD/DVD ROM dumps work — install via Wine or extract
-with `unshield` from `data1.hdr` + `data1.cab` + `data2.cab` + `data3.cab`,
-plus the loose `Pak2.pk3` from disc 2.
+Install `OpenMoHAA.vpk` with VitaShell, then copy legally obtained retail data into:
 
-## Controls
+```text
+ux0:data/openmohaa/main/
+├── Pak0.pk3
+├── Pak1.pk3
+├── Pak2.pk3
+├── Pak3.pk3
+├── Pak4.pk3
+├── Pak5.pk3
+├── music/              # loose files when present
+├── sound/              # loose files when present
+└── configs/
+```
 
-Default bindings shipped in `app0:/main/autoexec.cfg`:
+Localized installations may contain an additional language pak. Copy every `Pak*.pk3` from the legitimate installation. Missing `Pak2.pk3`, for example, leaves much of the world without its expected textures.
 
-| Vita | Action |
+The helper script prepares a Vita data directory and normalizes loose sound paths:
+
+```sh
+misc/console/prepare-data.sh /path/to/retail/main ./out-main vita
+```
+
+## Vita-specific source layout
+
+| Path | Purpose |
 |---|---|
-| Left stick | Move |
-| Right stick | Look |
-| Cross | Fire |
-| Square | Jump |
-| Circle | Crouch |
-| Triangle | Reload / use |
-| L | Walk (vs run) |
-| R | Iron sights / zoom |
-| L3 (left stick press) | Sprint |
-| R3 (right stick press) | Lean |
-| Select | Show scores |
-| Start | Open menu |
-| D-pad | Weapon select |
+| `cmake/platforms/vita.cmake` | Vita toolchain, libraries and VPK packaging |
+| `code/sys/sys_vita.c` | Platform startup and Vita memory setup |
+| `code/qcommon/net_vita.c` | Disabled network implementation |
+| `code/sdl/vita_gl_stubs.c` | Legacy GL entry points not supplied by vitaGL |
+| `code/gamespy/gamespy_vita_stub.c` | No-op GameSpy layer |
+| `misc/vita/sce_sys/` | LiveArea assets |
+| `misc/vita/main/autoexec.cfg` | Bundled controls and Vita defaults |
 
-Override in `ux0:data/openmohaa/main/autoexec.cfg` if you want a
-different layout.
+Most changes shared with desktop code are guarded by `__vita__`. A Vita fix should stay inside that boundary unless the same defect is demonstrated on other platforms.
 
-## Known issues
+## Current technical state
 
-- **In-game gameplay crashes at script compilation.** The menu, audio,
-  cinematics and renderer are all working on real hardware. Selecting
-  Single Player → a mission successfully loads `game.suprx` (statically
-  linked into the eboot — see `cmake/basegame.cmake` and
-  `code/sys/new/sys_main_new.c`) and `G_InitGame` runs cleanly. The
-  briefing map then crashes inside `ClassDef::GetDef(int)` at
-  `this->m_pResponseDefs[event]` with `m_pResponseDefs == NULL`,
-  called from `ScriptCompiler::EmitField`.
+The engine, filesystem, renderer, audio, scripting, AI and base campaign all run on real hardware. Important Vita-specific fixes currently include:
 
-  Diagnosed via `vita-parse-core` against the psp2dmp file:
-  ```
-  PC: ClassDef::GetDef(int) at "ldr.w r0, [r3, r1, lsl #2]"
-      r0 = this  (heap, 0x83b9c8e0)
-      r1 = eventnum (0x330)
-      r3 = this->responseLookup  ← NULL → crash
-  LR: ScriptCompiler::EmitField
-  ```
+- BSP triangle submission through a vitaGL-compatible path;
+- diffuse and lightmap multitexturing;
+- textured skies using vertex arrays rather than an unsafe immediate-mode path;
+- cgame event and temporary-effect lifetime handling across mission transitions;
+- complete manual save payloads and recovery of missing temporary-effect TIKI pointers;
+- separate CI symbol artifacts for dump analysis.
 
-  `responseLookup` is allocated by `ClassDef::BuildResponseList()`
-  which iterates `ClassDef::classlist` during `L_InitEvents()`. So
-  the crash means BuildResponseList didn't run for this ClassDef
-  *or* `this` is a stale/duplicate instance not in `classlist`.
+Known limitations:
 
-  Things that did **not** turn out to be the cause (already tested
-  and reverted):
-    - `WITH_SCRIPT_ENGINE` struct-layout drift between TUs: we
-      hypothesised that fgame's view of `ClassDef` (with
-      `waitTillSet`) put `responseLookup` at a different offset to
-      the engine's view (without `waitTillSet`). Disassembly of
-      both compiled GetDef bodies shows both compilers read
-      `[r0, #24]` — `waitTillSet` is declared *after*
-      `responseLookup` in the struct, so its presence/absence does
-      not shift the field. The layout was consistent all along.
+- performance is highly scene-dependent;
+- save restoration can take close to three minutes;
+- some save thumbnails capture black or noisy framebuffer data;
+- the complete base campaign has not been validated;
+- multiplayer and expansion campaigns are not supported test targets;
+- untested effect and mission paths may still crash.
 
-  More likely causes for the next attempt:
-    - `corepp/class.cpp` is linked into the eboot three times
-      (engine, cgame, game). Each TU has its own static `classlist`
-      / `classroot` pointer initialiser. With
-      `-Wl,--allow-multiple-definition` ld keeps the first, but the
-      C++ static initialisers in `.init_array` from all three TUs
-      *do* run — `ClassDef` constructors push to whatever `classlist`
-      symbol resolves at their TU's relocation, which may not be the
-      same address. The chain visible to `L_InitEvents` may be
-      missing some ClassDefs.
-    - This points to the proper fix: split corepp into its own
-      static library used by both the engine and the game module
-      so there's exactly one set of static initialisers, mirroring
-      the upstream SHARED-lib semantics.
-    - The `this = 0x83b9c8e0` being on the heap (vs the data section
-      where static `ClassInfo` instances should live) is also worth
-      investigating — that pointer may be coming from a copy/move
-      of a static ClassDef, or from a heap-allocated transient.
-- **Vita3K compatibility**: the binary boots and reaches `vglInitExtended`,
-  but Vita3K's GXM emulation is incomplete and the renderer hangs there.
-  Real Vita hardware works because vitaGL talks to GXM directly.
-- **Performance**: Cortex-A9 quad @ 444 MHz is below OpenMoHAA's
-  recommended (Cortex-A9 800 MHz). Expect 20-30 FPS in light scenes,
-  lower in busy ones. Overclocking to 500 MHz via PSVshell helps.
-- **GXM enum width warning**: linker warns about `32-bit enums vs
-  variable-size enums` on a few `.o` files. The Sce stub libs are
-  built with `-fshort-enums`; our app uses fixed 32-bit enums. They
-  agree on every value we care about, but if you see weird sce*
-  return-value handling that's the first place to look.
-- **Multiplayer is gone.** Direct-IP play would be possible by writing
-  a real `net_psp2.c` against `sceNet`; the existing stubs make every
-  send/recv a no-op.
+## Debugging a hardware crash
 
-## Debugging
+Collect all of the following before changing code:
 
-- VitaShell → SELECT → Show log dumps the current process log to
-  `ux0:data/`.
-- `ux0:data/openmohaa/main/crashlog.txt` is written by the engine on
-  internal `Com_Error` failures.
-- For Vita3K dev iterations the log lives at:
-  `~/Library/Application Support/Vita3K/Vita3K/vita3k.log` (macOS).
+1. The exact release, commit or Actions run used to build the VPK.
+2. The matching `boot.log`.
+3. The newest `psp2core-*.psp2dmp`.
+4. Exact reproduction steps, including mission, checkpoint/manual-load history and the action that triggered the crash.
+5. The save folder when the failure depends on a particular slot.
 
-## Layout of the Vita-specific changes
+Resolve the dump only against symbols from the exact same VPK. A nearby commit can move every function offset and produce a convincing but false diagnosis.
 
-```
-cmake/platforms/vita.cmake          # toolchain, deps, VPK packaging
-code/sys/sys_vita.c                 # heap/stack budget, Sce module loads
-code/qcommon/net_vita.c             # net_ip.c stub
-code/sdl/vita_gl_stubs.c            # legacy GL entry points vitaGL omits
-code/gamespy/gamespy_vita_stub.c    # GameSpy SDK no-op layer
-misc/vita/sce_sys/                  # icon0, LiveArea bg, template.xml
-misc/vita/main/autoexec.cfg         # default bindings + render tuning
-```
+Useful distinctions when triaging:
 
-In-tree files patched with `#ifdef __vita__` guards:
+- a crash during save creation is different from a crash after `Game Loaded`;
+- a transition crash is different from a later combat-effect crash;
+- malformed `.tga` thumbnails do not prove that the `.sav` world archive is corrupt;
+- a complete slot normally contains `.sav`, `.ssv` and `.tga` files.
 
-- `code/qcommon/q_platform.h` — Vita OS detection
-- `code/gamespy/common/gsPlatform.h` — Vita treated as `_UNIX` (then stubbed)
-- `code/sys/sys_unix.c` — `Sys_Exec`, paths, `Sys_GetCurrentUser`,
-  `Sys_Basename`/`Dirname`, `Sys_Mkfifo`, `Sys_PIDIsRunning`,
-  `Sys_PlatformInit/Exit`
-- `code/sys/new/sys_unix_new.c` — backtrace gated out
-- `code/sdl/sdl_glimp.c` — Vita branch in `GLimp_SetMode` calls
-  `vglInitExtended` and skips the desktop GL context loop
-- `code/renderergl1/tr_image.c` — removed `JPEG_INTERNALS` (unused)
-- `cmake/shared_sources.cmake`, `cmake/client.cmake` — gating
-- `cmake/platforms/all.cmake`, `CMakeLists.txt` — wire-in
+## Verification before release
+
+A green Vita build is only the first gate. Run a hardware sequence that covers:
+
+1. a natural mission transition;
+2. combat with bullets, explosions and temporary effects;
+3. a fresh manual save and load;
+4. a checkpoint load followed by loading the manual save;
+5. closing the app, reopening it and loading again;
+6. continued play after restoration.
+
+If a crash occurs, keep the exact VPK and its symbol artifact together until the dump has been resolved.
