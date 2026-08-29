@@ -134,7 +134,6 @@ Do not submit this fork's AI-derived changes to upstream OpenMoHAA as if they we
 
 - [HenryKun55](https://github.com/HenryKun55) created the original Vita-port groundwork, including the VitaSDK platform integration and early hardware bring-up.
 - [OpenMoHAA](https://github.com/openmoh/openmohaa) and its contributors created and maintain the open-source engine this port is based on.
-- Chat Productions currently maintains the Vita fork and performs the real-hardware testing documented here.
 - [VitaSDK](https://vitasdk.org/) supplies the Vita toolchain and platform libraries.
 - [vitaGL](https://github.com/Rinnegatamante/vitaGL) provides the OpenGL-compatible rendering layer used on Vita.
 
