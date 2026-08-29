@@ -1,5 +1,28 @@
 # OpenMoHAA Vita milestones
 
+## v0.0.2-vita.2 — 2026-08-28
+
+Second experimental hardware-tested release of the Vita fork.
+
+### Fixes
+
+- Preserved persistent client-effect events across mission transitions, preventing a confirmed use-after-free during later combat.
+- Archived stable TIKI model names for transient effects instead of stale renderer-owned pointers.
+- Added recovery for complete recent saves whose temporary-model TIKI pointer is missing but whose archived model handle is valid.
+- Skipped malformed skeletal render entities instead of dereferencing a null TIKI.
+- Retained the textured-sky, BSP triangle, multitexture/lightmap, transition and complete manual-save fixes from the previous release.
+
+### Hardware progress as of 2026-08-29
+
+- Played through the early base campaign, including the truck-sabotage section of the third mission.
+- Manual saves, checkpoint saves and loading after a full app restart have worked in the tested sequence.
+- Previously reported mission-three crashes did not reproduce in the latest run.
+- Save loading remains extremely slow and has taken close to three minutes.
+- Some save thumbnails contain invalid-looking framebuffer pixels even when the `.sav` payload loads correctly.
+- The full campaign and expansion campaigns remain unvalidated.
+
+This is still an experimental pre-release. The observations above describe tested paths, not a claim of complete campaign stability.
+
 ## v0.0.2-vita.1 — 2026-08-22
 
 First hardware-tested milestone of the mustafamert48 Vita fork.

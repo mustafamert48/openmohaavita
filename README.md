@@ -1,269 +1,136 @@
-# OpenMoHAA
+# OpenMoHAA Vita
 
-[![Build](https://github.com/openmoh/openmohaa/actions/workflows/branches-build.yml/badge.svg?branch=main)](https://github.com/openmoh/openmohaa/actions/workflows/branches-build.yml) [![Release](https://img.shields.io/github/v/release/openmoh/openmohaa)](https://github.com/openmoh/openmohaa/releases) [![Downloads](https://img.shields.io/github/downloads/openmoh/openmohaa/total)](https://github.com/openmoh/openmohaa/releases)
+[![Vita build](https://github.com/mustafamert48/openmohaavita/actions/workflows/vita-build.yml/badge.svg?branch=vita-port)](https://github.com/mustafamert48/openmohaavita/actions/workflows/vita-build.yml)
+[![Latest release](https://img.shields.io/github/v/release/mustafamert48/openmohaavita?include_prereleases&label=Vita%20release)](https://github.com/mustafamert48/openmohaavita/releases/latest)
+[![License](https://img.shields.io/github/license/mustafamert48/openmohaavita)](COPYING.txt)
 
-![License](https://img.shields.io/github/license/openmoh/openmohaa) ![Commits](https://img.shields.io/github/commit-activity/t/openmoh/openmohaa)
+![OpenMoHAA](misc/openmohaa-text-sm.png)
 
-![Discord](https://img.shields.io/discord/596049712579215361?logo=discord&logoColor=white&color=5865F2)
-
-![logo](misc/openmohaa-text-sm.png)
-
-## What is OpenMoHAA?
-
-OpenMoHAA is an open-source project aimed at preserving and enhancing **Medal of Honor: Allied Assault** (including Spearhead and Breakthrough expansions) by providing more features and bugfixes, across modern platforms and architectures.
-
-Powered by [ioquake3](https://github.com/ioquake/ioq3) and the [F.A.K.K SDK](https://code.idtech.space/ritual/fakk2-sdk), OpenMoHAA provides:
-- Full compatibility with the original game: assets, scripts and multiplayer
-- Better support for modern systems
-- Cross-platform support (Linux, Windows, macOS)
-- Support for both single-player and multiplayer modes
-- Includes all fixes from Spearhead 2.15 and Breakthrough 2.40b
-- More fixes and features, such as bots and a ban system
-
-*OpenMoHAA is an independent project and is not affiliated with or endorsed by Electronic Arts.*
-
-## Getting started
-
-- 📦 [Installing OpenMoHAA](docs/markdown/01-intro/01-installation.md)
-- ▶️ [How to play: Launching the game, expansions & file locations](docs/markdown/02-running/01-running.md)
-- ❓ [FAQ & Troubleshooting](docs/markdown/02-running/03-faq.md)
-- 🌐 [Setting up a game server](docs/markdown/02-running/02-running-server.md)
-
-## Reporting Issues
-
-> [!NOTE]
-> OpenMoHAA hasn't hit version 1.0.0 yet. Think of it like a beta build from the golden age of LAN parties. Features are being added, bugs are getting squashed, and more things are being tweaked. Things might change, break, or get even better over time.
-> 
-> If that sounds like your kind of mission, gear up, frag some bots, and help level up OpenMoHAA!
-
-If you encounter a bug or a problem, you can do one of the following:
-- Submit an [issue](https://github.com/openmoh/openmohaa/issues) on GitHub (use the template).
-- Join the [OpenMoHAA Discord](https://discord.gg/NYtH58R) for a quick help.
-
-## Additional documentation
-
-- 📖 [Documentation](https://openmoh.github.io/openmohaa)
-- ⚙️ [Game settings & configuration](docs/markdown/03-configuration/01-configuration.md)
-- 📝 [Code & Scripting reference](docs/markdown/04-coding/02-coding.md)
-- 📜 [Contributing guidelines](CONTRIBUTING.md)
-
-## Current state
-
-- 🧰 [List of differences](docs/markdown/01-intro/04-differences.md)
-
-### Single-player
-
-The entire single-player campaign should work (Allied Assault, Spearhead and Breakthrough). If you encounter any bug, please create a new [GitHub issue](https://github.com/openmoh/openmohaa/issues) describing them.
-
-### Multiplayer
-
-- Almost fully stable
-- All official game modes are supported, including those from Spearhead and Breakthrough:
-  - Free-For-All
-  - Team-Deathmatch
-  - Round-based match
-  - Objective match
-  - Tug-of-War (Spearhead)
-  - Liberation (Breakthrough)
-- Popular mods like **Freeze-Tag** are supported
-- Built-in bots for offline practice and for testing
-  - 🔧 [Setting up bots](docs/markdown/02-running/01-running.md#Playing-with-bots)
-
-You can host your own [OpenMoHAA server](docs/markdown/02-running/02-running-server.md#) or join others using OpenMoHAA.
-
-## Console homebrew ports (PS Vita / Nintendo Switch)
-
-> [!WARNING]
-> **Console ports — version `0.0.1` · experimental TEST build.**
-> The Vita/Switch ports are at a very early stage and **everything here is still
-> a test / work in progress**. They are already **functional enough to play and,
-> more importantly, to surface bugs** — which is exactly the goal right now.
-> **Expect** crashes, freezes, missing audio/effects, performance dips and rough
-> edges. Treat this as a tool to *find and report problems*, **not** a finished
-> release. No warranty — back up your SD card / saves before using it.
-
-This fork (`vita-port` branch) adds experimental homebrew ports to the **PlayStation Vita** (vitaGL / vitasdk) and the **Nintendo Switch** (libnx / devkitPro), alongside the regular desktop builds. All console-specific code is guarded behind `__vita__` / `__SWITCH__`, so the Linux/Windows/macOS builds are unaffected. The Switch build links the engine, game and cgame into a single NRO with per-module symbol isolation (it has no runtime code loader).
+An experimental PlayStation Vita port of [OpenMoHAA](https://github.com/openmoh/openmohaa), the open-source reimplementation of *Medal of Honor: Allied Assault*.
 
 > [!IMPORTANT]
-> **You supply your own game data.** OpenMoHAA ships only the open-source engine — **no game assets are included or distributed here**. Copy a `main/` data set from your **own** retail *Medal of Honor: Allied Assault* install (the `Pak*.pk3` files from your CD1/CD2, plus the loose `sound/` and `music/`).
+> **This is a vibe-coded, AI-assisted hobby project.** Much of the Vita-specific work has been drafted with ChatGPT/Codex, then built in CI and tested iteratively on real Vita hardware by the repository owner. A green build does not prove that a change is correct; crash dumps, logs and repeatable hardware tests decide what ships. This fork is independent of, and not endorsed by, the upstream OpenMoHAA maintainers.
 
-| Platform | Current state (`v0.0.1` — expect bugs) |
-|----------|------------------------------------------|
-| **macOS** | The reference desktop build — believed to work well, but **not guaranteed**: it's `0.0.1` like the rest, so **anything can still happen**. Please report what you hit. |
-| **PS Vita** | **Playable** — single-player runs — but it **can still crash**, and performance work (VBO world draw, GPU skinning, faster loads) is ongoing. |
-| **Nintendo Switch** | **Playable on real hardware** — the campaign runs after the briefing-skip, script loop-guard and loose-sound fixes — but it **can still freeze at certain moments and hit crashes that aren't mapped yet**. This is exactly why it's `0.0.1`. |
+The port is playable, but it is not finished. Back up your saves and expect rough edges.
 
-### Getting the game data (you must own it)
+## Current progress
 
-OpenMoHAA ships **no game assets** — you need the data from a copy of *Medal of
-Honor: Allied Assault* that **you own**. Whatever the source, you are after the
-game's **`main/` folder** and the files inside it.
+Status as of **29 August 2026**, using [`v0.0.2-vita.2`](https://github.com/mustafamert48/openmohaavita/releases/tag/v0.0.2-vita.2):
 
-**Where it can come from:**
+| Area | Status | Hardware-tested result |
+|---|---|---|
+| Boot, menus and audio | Working | Starts from LiveArea and reaches gameplay on a real Vita. |
+| Base campaign | In progress | Played through the early campaign, including the truck-sabotage section of the third mission. The full campaign is not yet validated. |
+| Mission transitions | Working so far | Natural transitions through the tested missions complete without the earlier stale-event crash. |
+| Manual and checkpoint saves | Working so far | Saves can be created, loaded, closed and loaded again after restarting the app. |
+| World rendering | Working with limitations | BSP geometry, lightmaps and textured skies render through Vita-safe paths. Visual bugs may remain. |
+| Performance | Needs work | Around 18–20 FPS in early tested scenes, with lower performance in busy combat. Save loading can take close to three minutes. |
+| Save thumbnails | Buggy | Some `.tga` previews contain black or noisy pixels. The separate `.sav` payload can still be valid. |
+| Multiplayer | Disabled | The Vita networking and GameSpy paths are stubbed. |
+| Spearhead / Breakthrough | Not validated | The current Vita release targets the base game's `main/` data. |
 
-- **GOG — "Medal of Honor: Allied Assault War Chest":** the easiest legit source
-  today. The bundle (base game + **Spearhead** + **Breakthrough**) is sold on
-  GOG; after installing, the data sits in the game folder as
-  `main/` + `mainta/` + `maintt/`.
-- **Steam — same "War Chest" bundle:** also distributed on Steam; the data lives
-  under `…\Steam\steamapps\common\Medal of Honor Allied Assault War Chest\`.
-  (Store availability has shifted over time — check your own library; the folder
-  layout is identical.)
-- **Retail discs (CD1 + CD2):** install on a Windows PC; the install folder
-  (e.g. `…\EA GAMES\MOHAA\`) contains `main/` (+ `mainta/` / `maintt/` if the
-  expansions are installed).
-- **EA App / Origin:** not currently sold there.
-- **Demo:** the official AA / Spearhead / Breakthrough demos also work on
-  desktop (`+set com_target_demo 1`).
+### What changed in `v0.0.2-vita.2`
 
-> ⚠️ Don't grab "the game files" from random download sites — that's piracy, and
-> those paks are frequently modified or incomplete. Use the discs or the store
-> copy **you own**.
+- Fixed use-after-free crashes in persistent client effects across mission transitions.
+- Stored stable TIKI model names for temporary effects instead of renderer-owned pointers.
+- Recovered recent complete saves whose temporary effects had a missing TIKI pointer.
+- Rejected malformed skeletal render entities instead of dereferencing a null pointer.
+- Retained the textured-sky, BSP triangle, multitexture/lightmap, transition and complete-save fixes from the previous build.
 
-**What the engine actually needs (minimum, base game):**
+See the [Vita milestone history](docs/VITA_CHANGELOG.md) for more detail.
 
-- `main/Pak0.pk3` … `main/Pak5.pk3` — the game data. `Pak0`–`Pak3` are the base
-  game; `Pak4`/`Pak5` come from the official **v1.11 patch**. Localized releases
-  also add a **language pak** (e.g. `Pak6Uk.pk3` = English, `Pak6Es.pk3` =
-  Spanish — the trailing letters are the language). **Copy every `Pak*.pk3` you
-  have** — e.g. `Pak2.pk3` holds most of the world textures, so without it
-  levels render grey/untextured.
-- *(optional, recommended)* `main/music/*.mp3` and any loose `main/sound/…`
-  files — music and ambient/vehicle sounds that aren't packed inside the paks
-  (these are what the loose-sound note below, and `prepare-data.sh`, handle).
+## Install
 
-> **Expansions:** **Spearhead** uses a separate `mainta/` folder and
-> **Breakthrough** a `maintt/` folder (desktop: `+set com_target_game 1` / `2`).
-> The Vita/Switch ports currently target the **base game (`main/`)**.
+You need a homebrew-capable PS Vita and your own legitimate copy of *Medal of Honor: Allied Assault*. This repository and its releases do **not** contain EA game data.
 
-### Where the files go
+1. Download `OpenMoHAA.vpk` from the [latest release](https://github.com/mustafamert48/openmohaavita/releases/tag/v0.0.2-vita.2).
+2. Install the VPK with VitaShell.
+3. Copy your retail game data to:
 
-On every platform the **engine binary** and the **game data** are separate. Drop the data `main/` folder in the per-platform location below:
+   ```text
+   ux0:data/openmohaa/main/
+   ```
 
-| Platform | Engine binary | Game data (`main/`) |
-|----------|---------------|---------------------|
-| **macOS** | the built `openmohaa` app / binary | `~/Library/Application Support/openmohaa/main/` |
-| **PS Vita** | install `OpenMoHAA.vpk` with VitaShell | `ux0:data/openmohaa/main/` |
-| **Nintendo Switch** | `OpenMoHAA.nro` at `sdmc:/switch/OpenMoHAA.nro` (run from hbmenu) — or a [forwarder NSP](misc/switch/forwarder/README.md) for a HOME-menu icon | `sdmc:/switch/openmohaa/main/` |
+4. Copy every `Pak*.pk3` from your installation. `Pak0.pk3` through `Pak5.pk3` are expected for the patched base game. Localized editions may include an additional language pak.
+5. Copy loose `music/` and `sound/` files if your installation keeps them outside the paks.
+6. Launch OpenMoHAA from LiveArea.
 
-A complete `main/` looks like this:
-
-```
-main/
-├── Pak0.pk3 … Pak5.pk3   # base-game data (Pak0–3 = game, Pak4–5 = v1.11 patch)
-├── music/                # *.mp3 (loose, optional)
-├── sound/                # loose sounds that are NOT inside the Pak*.pk3
-│   ├── amb/              # amb_* , wind_*        (ambient)
-│   ├── environment/      # wind_*
-│   ├── mechanics/        # mec_* , shortwave* , static*
-│   └── vehicle/          # truck_* , veh_* , m1_* , plane4
-└── autoexec.cfg          # console builds: misc/<platform>/main/autoexec.cfg
-```
-
-> [!WARNING]
-> **Switch / Vita loose-sound gotcha:** any sound that is *not* packed inside a `Pak*.pk3` must sit in the exact sub-folder and **lowercase** filename the engine asks for (e.g. `sound/amb/amb_rainint_01.wav`). Retail data sometimes ships these flat and capitalized directly in `sound/`, which the case-sensitive lookup never finds — the result is a stutter/freeze as the engine retries the missing file every frame (notably the rain on Mission 5). The helper script below fixes this for you.
-
-### Preparing your data set
-
-[`misc/console/prepare-data.sh`](misc/console/prepare-data.sh) turns your own retail `main/` into a correctly-laid-out `main/` ready to copy onto the device — it copies the paks + music and routes every loose sound into its proper sub-folder (lowercase), then drops in the right `autoexec.cfg`:
+You can prepare a correctly laid-out data directory on a computer with:
 
 ```sh
-misc/console/prepare-data.sh /path/to/retail/main ./out-main switch
-# then copy ./out-main to  sdmc:/switch/openmohaa/main/   (Switch)
-#                     or to ux0:data/openmohaa/main/       (Vita: pass "vita")
+misc/console/prepare-data.sh /path/to/retail/main ./out-main vita
 ```
 
-### Running on Switch — with or without a forwarder NSP
+Then copy the contents of `./out-main` to `ux0:data/openmohaa/main/`.
 
-There are two ways to launch the Switch port; **both play identically** — the
-difference is only how you start it:
+## Default controls
 
-- **Without an NSP (default):** put `OpenMoHAA.nro` at `sdmc:/switch/OpenMoHAA.nro`
-  and open it from **hbmenu** (Album → homebrew). Nothing to install.
-- **With a forwarder NSP (optional):** build a tiny forwarder so OpenMoHAA gets
-  its own **icon on the HOME menu**, which just launches that same NRO. The
-  forwarder contains **only the launcher — no game data**. See
-  [`misc/switch/forwarder/README.md`](misc/switch/forwarder/README.md).
+| Vita input | Action |
+|---|---|
+| Left stick | Move |
+| Right stick | Look / aim |
+| Cross | Use / interact |
+| Circle | Crouch; hold for prone |
+| Square | Reload |
+| Triangle | Jump |
+| L | Secondary attack / scope on weapons that support it |
+| R | Fire |
+| D-pad left / right | Previous / next weapon |
+| D-pad up | Alternate use |
+| Select | Objectives / score |
+| Start | Menu |
 
-Either way the game data lives on the SD card at `sdmc:/switch/openmohaa/main/`.
+The M1 Garand does not have a normal iron-sight zoom in the original game and cannot be topped up before the clip is empty. The L binding works only for weapons with a secondary attack or scope.
 
-### Switch — controls, what we tested on, and config
+## Known issues and workarounds
 
-**Controls** come from [`misc/switch/main/autoexec.cfg`](misc/switch/main/autoexec.cfg)
-(installed automatically by `prepare-data.sh`). Default layout:
+### Long loading times
 
-| Input | Action |
-|-------|--------|
-| **Left stick** | Move (forward / back / strafe) |
-| **Right stick** | Look / aim |
-| **ZR** | Fire |
-| **ZL** | Secondary fire |
-| **A** | Use / interact |
-| **B** | Jump |
-| **Y** | Crouch |
-| **X** | Reload |
-| **L / R** | Previous / next weapon |
-| **L3 / R3** | Lean left / right |
-| **D-pad** ↑ / ↓ | Use / crouch |
-| **D-pad** ← / → | Previous / next weapon |
-| **+** (Plus) | Menu |
-| **−** (Minus) | Scoreboard · **double-tap** = on-screen dev/perf menu |
+Loading a recent save was measured at roughly 178 seconds: about 122 seconds restoring the server/save state and 56 seconds initializing the client. CPU overclocking does not remove the underlying bottleneck.
 
-That config only sets the **hardware essentials** the game can't default on
-Switch — gamepad on, analog-look feel, the button map, native 720p, sound on.
-Everything else (volume, sensitivity, etc.) is left to the in-game menu so your
-choices persist in `configs/omconfig.cfg` across reboots.
+### Cheat menu entries
 
-**Tested on:**
-- **Real Nintendo Switch** on custom firmware (Atmosphère) — the primary target
-  and the source of truth for crashes.
-- **Ryubing `1.3.3`** — the community fork of Ryujinx (maintained by
-  GreemDev / LotP) that continues the emulator after the original was
-  discontinued in Oct 2024. Tested on the **macOS** build with **stock, default
-  settings: no config changes, worked out of the box.** Builds for
-  Windows / macOS / Linux live on the project's own Forgejo,
-  [git.ryujinx.app](https://git.ryujinx.app/ryubing/ryujinx/-/releases) (the
-  canonical home after the 2024 takedown — a GitHub mirror also exists), and are
-  released together, so grab the latest matching version for your OS.
+The current menu's **Cheats ON** action is incomplete, and its **God Mode** action sends the wrong command. As a temporary workaround, add these lines to `ux0:data/openmohaa/main/configs/omconfig.cfg`:
 
-> Reminder: this is `v0.0.1`. The Switch build can still **freeze at certain
-> moments or hit crashes that aren't mapped yet**. When that happens,
-> `sdmc:/switch/openmohaa/main/boot.log` is where to look — on real hardware it
-> captures the faulting address so the crash can be traced.
+```cfg
+seta thereisnomonkey "1"
+seta cheats "1"
+alias god "dog"
+```
 
-## Screenshots
+Restart the app after editing the file. `dog` is the command used by the game; the alias makes the familiar `god` spelling work too.
 
-|                                                                                   |                                                                            |
-|-----------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| ![](docs/assets/images/v0.60.0-x86_64/mohdm1_1.png)                                      | ![](docs/assets/images/v0.60.0-x86_64/training_1.png)                               |
-| ![](docs/assets/images/v0.60.0-x86_64/flughafen_1.png)                                   | ![](docs/assets/images/v0.60.0-x86_64/flughafen_2.png)                            |
-| ![](docs/assets/images/v0.60.0-x86_64/mohdm2_1.png "Playing Freeze-Tag mode with bots")  | ![](docs/assets/images/v0.60.0-x86_64/training_3.png "Single-Player training")    |
+### Incomplete older saves
 
-*More screenshots [here](docs/assets/images)*
+A loadable slot needs `.sav`, `.ssv` and `.tga` files. Old Vita builds sometimes wrote only metadata and a screenshot. A slot with no `.sav` world archive cannot be recovered.
 
-## Development & Compiling
+## Reporting a Vita problem
 
-- 💻 [Building from source](docs/markdown/04-coding/01-compiling.md)
+[Open an issue](https://github.com/mustafamert48/openmohaavita/issues) and include:
 
-## Third party librairies
+- the release or commit you tested;
+- the mission/map and the exact sequence before the problem;
+- whether the game was freshly started, checkpoint-loaded or manual-save-loaded;
+- the matching `boot.log`;
+- the newest `psp2core-*.psp2dmp` for a crash;
+- the affected save folder when the crash depends on a particular save.
 
-The following third party tools and libraries are used by the project
+Please say whether the problem reproduces. A one-off crash and a deterministic crash need different investigation.
 
-- [Flex](https://github.com/westes/flex)
-- [Bison](https://savannah.gnu.org/projects/bison/)
-- [SDL](http://www.libsdl.org/)
-- [OpenAL](https://www.openal.org/)
-- [LibMAD](http://www.underbit.com/products/mad/)
-- [cURL](https://curl.se/)
-- [Libogg](https://github.com/gcp/libogg)
-- [Libvorbis](https://xiph.org/vorbis/)
-- [Libopus](https://opus-codec.org/)
+## Building the Vita version
 
-## Resources
+The GitHub Actions workflow builds the VPK and uploads separate symbol files for crash-dump analysis. For a local VitaSDK build, see [the Vita build and debugging guide](docs/PORTING-VITA.md).
 
-- 🔗 [GitHub Repository](https://github.com/openmoh/openmohaa/)
-- 🌐 [MOH-DB](https://www.moh-db.com/)
-- 🕹️ [333networks](https://333networks.com/)
-- 📂 [ModDB](https://www.moddb.com/games/medal-of-honor-allied-assault)
-- 📂 [GameBanana](https://gamebanana.com/games/720)
-- 💬 [Join us on Discord](https://discord.gg/NYtH58R)
+## Contributing
+
+This fork accepts hardware test reports, documentation fixes and focused code changes. Read the [fork contribution policy](CONTRIBUTING.md), especially the disclosure and verification requirements for AI-assisted work.
+
+Do not submit this fork's AI-derived changes to upstream OpenMoHAA as if they were independently human-authored. Upstream has its own contribution policy.
+
+## Credits and license
+
+- [OpenMoHAA](https://github.com/openmoh/openmohaa) and its contributors provide the engine this port is based on.
+- [VitaSDK](https://vitasdk.org/) supplies the Vita toolchain and platform libraries.
+- [vitaGL](https://github.com/Rinnegatamante/vitaGL) provides the OpenGL-compatible rendering layer used on Vita.
+
+OpenMoHAA is independent of and not endorsed by Electronic Arts. The engine source is distributed under the terms in [COPYING.txt](COPYING.txt); original game assets are not included.
