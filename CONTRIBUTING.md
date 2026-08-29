@@ -26,7 +26,7 @@ Do not start implementing a new feature before getting approval. Pull requests t
 ## Issues
 
 Before opening a new issue:
-1. Make sure you're running the [latest Vita release](https://github.com/mustafamert48/openmohaavita/releases).
+1. Make sure you're running the [latest Vita release](https://github.com/ChatProductions/openmohaavita/releases).
 2. Check if the issue already exists.
 
 When filing an issue, include as much detail as possible, this helps reproducing and fixing the problem effectively:

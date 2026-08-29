@@ -25,7 +25,7 @@ This is still an experimental pre-release. The observations above describe teste
 
 ## v0.0.2-vita.1 — 2026-08-22
 
-First hardware-tested milestone of the mustafamert48 Vita fork.
+First hardware-tested milestone of the Chat Productions Vita fork.
 
 ### Confirmed on real PS Vita hardware
 
