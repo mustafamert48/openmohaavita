@@ -1,7 +1,7 @@
 # OpenMoHAA Vita
 
 [![Vita build](https://github.com/mustafamert48/openmohaavita/actions/workflows/vita-build.yml/badge.svg?branch=vita-port)](https://github.com/mustafamert48/openmohaavita/actions/workflows/vita-build.yml)
-[![Latest release](https://img.shields.io/github/v/release/mustafamert48/openmohaavita?include_prereleases&label=Vita%20release)](https://github.com/mustafamert48/openmohaavita/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/mustafamert48/openmohaavita?include_prereleases&label=Vita%20release)](https://github.com/mustafamert48/openmohaavita/releases/tag/v0.0.2-vita.2)
 [![License](https://img.shields.io/github/license/mustafamert48/openmohaavita)](COPYING.txt)
 
 ![OpenMoHAA](misc/openmohaa-text-sm.png)
